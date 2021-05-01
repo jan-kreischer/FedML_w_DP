@@ -5,12 +5,13 @@ from ML_model import *
 
 class Client(nn.Module):
 
-    def __init__(self,model,loader,lr,epochs):
+    def __init__(self,model,loader,lr,epochs,n):
         super(Client,self).__init__()
         self.lr = lr
         self.model = model()
         self.train_loader = loader
         self.epochs = epochs
+        self.n = n
 
     def rcv(self,model_param):
         """ Receive aggregated parameters, update model """
@@ -29,7 +30,9 @@ class Client(nn.Module):
                 loss.backward()
                 optimizer.step()
 
+            print("Client {} - Epoch {} done".format(self.n,e))
 
+        print("Client {} - done".format(self.n))
 
 
 

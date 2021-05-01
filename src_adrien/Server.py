@@ -16,7 +16,8 @@ class Server(nn.Module):
             model=model,
             loader=loaders[i],
             lr=lr,
-            epochs=epochs
+            epochs=epochs,
+            n=i
         ) for i in range(self.nClient)]
 
         self.global_model = model()
@@ -44,6 +45,6 @@ class Server(nn.Module):
     def global_update(self):
         idxs = np.random.choice(range(self.nClient),self.nClient,replace=False) # permutation
         for idx in idxs:
-            self.clients[idx].update_grad()
+            self.clients[idx].update()
         self.broadcast(self.aggregated(idxs))
 
