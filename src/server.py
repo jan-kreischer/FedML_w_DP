@@ -5,7 +5,7 @@ from client import Client
 import numpy as np
 from typing import List, Dict
 from data import FedMNIST
-from multiprocessing import Process
+from torch.multiprocessing import Process
 
 
 class Server:
@@ -24,6 +24,7 @@ class Server:
         self.test_data, self.clients_len_data = data.get_server_data()
         self.len_train_data = np.sum(list(self.clients_len_data.values()))
         self.global_model = model
+        self.criterion = nn.NLLLoss()
 
     def aggregate(self, client_ids: List[int]):
         """ FedAvg algorithm, averaging all parameters """
@@ -44,10 +45,33 @@ class Server:
         for client in self.clients.values():
             client.receive_weights(new_params.copy())
 
+    def compute_test_loss(self):
+        self.global_model.eval()
+        test_loss = 0
+        for images, labels in self.test_data:
+            pred = self.global_model(images)
+            test_loss += self.criterion(pred, labels)
+
+        return test_loss
+
+    def compute_acc(self):
+        self.global_model.eval()
+        nr_correct = 0
+        len_test_data = 0
+        for images, labels in self.test_data:
+            outputs = self.global_model(images)
+            _, pred_labels = torch.max(outputs, 1)
+            nr_correct += torch.equal(pred_labels, labels).sum().item()
+            len_test_data += len(images)
+
+        return nr_correct / len_test_data
+
     def global_update(self):
-        # client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  # permutation
-        for client in self.clients.values():
-            client.train()
+        client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  # permutation
+        for client_id in client_ids:
+            self.clients[client_id].train()
+
+        # Issue: https://github.com/pytorch/pytorch/issues/35472
         # processes = [Process(target=client.train, args=()) for client in self.clients.values()]
         # for p in processes:
         #     p.start()
@@ -55,4 +79,10 @@ class Server:
         #     p.join()
 
         aggregated_weights = self.aggregate(list(self.clients.keys()))
+
         self.broadcast_weights(aggregated_weights)
+
+        test_loss = self.compute_test_loss()
+        test_acc = self.compute_acc()
+
+        return test_loss, test_acc
