@@ -69,7 +69,7 @@ class Server:
         for images, labels in self.test_data:
             outputs = self.global_model(images)
             _, pred_labels = torch.max(outputs, 1)
-            nr_correct += torch.equal(pred_labels, labels).type(torch.uint8).sum().item()
+            nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
             len_test_data += len(images)
 
         return nr_correct / len_test_data
