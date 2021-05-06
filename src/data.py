@@ -2,6 +2,8 @@ import torch.utils.data
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 from typing import Dict
+from opacus.utils.uniform_sampler import UniformWithReplacementSampler
+from constants import BATCH_SIZE
 
 
 class FedMNIST:
@@ -42,5 +44,10 @@ class FedMNIST:
 
         return test_data, self.len_client_data
 
-    def get_client_data(self, client_id: int, batch_size: int = 64):
-        return DataLoader(self.data_train_split[client_id], batch_size=batch_size, shuffle=True)
+    def get_client_data(self, client_id: int):
+        return DataLoader(self.data_train_split[client_id],
+                          batch_sampler=UniformWithReplacementSampler(
+                              num_samples=len(self.data_train_split[client_id]),
+                              sample_rate=BATCH_SIZE / len(self.data_train_split[client_id]),
+                          )), \
+               len(self.data_train_split[client_id])

@@ -1,5 +1,4 @@
-syft~=0.3.0
 torchvision~=0.9.1+cpu
 torch~=1.8.1+cpu
-numpy~=1.19.5
-tensorflow-privacy~=0.5.2
+numpy~=1.20.2
+opacus~=0.13.0

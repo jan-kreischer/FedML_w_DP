@@ -6,22 +6,30 @@ import numpy as np
 from typing import List, Dict
 from data import FedMNIST
 from torch.multiprocessing import Process
+from opacus.dp_model_inspector import DPModelInspector
 
 
 class Server:
-    def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int):
+    def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False):
         self.nr_clients = nr_clients
         self.lr = lr
-        data = FedMNIST(nr_clients)
-        self.clients: Dict[int, Client] = {i: Client(
-            model=copy.deepcopy(model),
-            data=data.get_client_data(client_id=i),
-            lr=lr,
-            epochs=epochs,
-            client_id=i
-        ) for i in range(self.nr_clients)}
+        fedmnist_data = FedMNIST(nr_clients)
+        self.clients: Dict[int, Client] = {}
+        inspector = DPModelInspector()
+        assert inspector.validate(model), "The model is not valid"
+        for i in range(self.nr_clients):
+            data, len_data = fedmnist_data.get_client_data(client_id=i)
+            self.clients[i] = Client(
+                model=copy.deepcopy(model),
+                data=data,
+                len_data=len_data,
+                lr=lr,
+                epochs=epochs,
+                client_id=i,
+                is_private=is_private
+            )
 
-        self.test_data, self.clients_len_data = data.get_server_data()
+        self.test_data, self.clients_len_data = fedmnist_data.get_server_data()
         self.len_train_data = np.sum(list(self.clients_len_data.values()))
         self.global_model = model
         self.criterion = nn.NLLLoss()
@@ -61,7 +69,7 @@ class Server:
         for images, labels in self.test_data:
             outputs = self.global_model(images)
             _, pred_labels = torch.max(outputs, 1)
-            nr_correct += torch.equal(pred_labels, labels).sum().item()
+            nr_correct += torch.equal(pred_labels, labels).type(torch.uint8).sum().item()
             len_test_data += len(images)
 
         return nr_correct / len_test_data
