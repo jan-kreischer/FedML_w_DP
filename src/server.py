@@ -28,7 +28,6 @@ class Server:
                 client_id=i,
                 is_private=is_private
             )
-
         self.test_data, self.clients_len_data = fedmnist_data.get_server_data()
         self.len_train_data = np.sum(list(self.clients_len_data.values()))
         self.global_model = model
@@ -53,27 +52,22 @@ class Server:
         for client in self.clients.values():
             client.receive_weights(new_params.copy())
 
-    def compute_test_loss(self):
-        self.global_model.eval()
-        test_loss = 0
-        for images, labels in self.test_data:
-            pred = self.global_model(images)
-            test_loss += self.criterion(pred, labels)
-
-        return test_loss
-
     def compute_acc(self):
         self.global_model.eval()
 
+        test_loss = 0
         nr_correct = 0
         len_test_data = 0
         for images, labels in self.test_data:
             outputs = self.global_model(images)
+            # accuracy
             _, pred_labels = torch.max(outputs, 1)
             nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
             len_test_data += len(images)
+            # loss
+            test_loss += self.criterion(outputs,labels)
 
-        return nr_correct / len_test_data
+        return nr_correct / len_test_data, test_loss.item()
 
     def global_update(self):
         client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  # permutation
@@ -88,10 +82,7 @@ class Server:
         #     p.join()
 
         aggregated_weights = self.aggregate(list(self.clients.keys()))
-
         self.broadcast_weights(aggregated_weights)
-
-        test_loss = self.compute_test_loss()
-        test_acc = self.compute_acc()
+        test_acc, test_loss = self.compute_acc()
 
         return test_loss, test_acc
