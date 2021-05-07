@@ -43,7 +43,7 @@ class Server:
         for client_id, params in client_params.items():
             client_weight = self.clients_len_data[client_id] / self.len_train_data
             for name in new_params:
-                new_params[name] += params[name] / (client_weight / self.nr_clients)  # averaging
+                new_params[name] += params[name]*client_weight  # averaging
         # set new parameters to global model
         self.global_model.load_state_dict(copy.deepcopy(new_params))
         return self.global_model.state_dict().copy()
@@ -64,6 +64,7 @@ class Server:
 
     def compute_acc(self):
         self.global_model.eval()
+
         nr_correct = 0
         len_test_data = 0
         for images, labels in self.test_data:

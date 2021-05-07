@@ -37,6 +37,8 @@ class Client:
 
     def train(self):
         """ FedSGD algorithm, change local parameters """
+        self.model.train()
+
         for e in range(self.epochs):
             for i, (images, labels) in enumerate(self.train_loader):
                 self.optimizer.zero_grad()
