@@ -5,12 +5,12 @@ from client import Client
 import numpy as np
 from typing import List, Dict
 from data import FedMNIST
-from torch.multiprocessing import Process
 from opacus.dp_model_inspector import DPModelInspector
+import torch.multiprocessing as mp
 
 
 class Server:
-    def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False):
+    def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False, is_parallel=False):
         self.nr_clients = nr_clients
         self.lr = lr
         fedmnist_data = FedMNIST(nr_clients)
@@ -32,6 +32,7 @@ class Server:
         self.len_train_data = np.sum(list(self.clients_len_data.values()))
         self.global_model = model
         self.criterion = nn.NLLLoss()
+        self.is_parallel = is_parallel
 
     def aggregate(self, client_ids: List[int]):
         """ FedAvg algorithm, averaging all parameters """
@@ -71,15 +72,19 @@ class Server:
 
     def global_update(self):
         client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  # permutation
-        for client_id in client_ids:
-            self.clients[client_id].train()
 
-        # Issue: https://github.com/pytorch/pytorch/issues/35472
-        # processes = [Process(target=client.train, args=()) for client in self.clients.values()]
-        # for p in processes:
-        #     p.start()
-        # for p in processes:
-        #     p.join()
+        if self.is_parallel:
+            processes = []
+            for client_id in client_ids:
+                self.clients[client_id].model.share_memory()
+                p = mp.Process(target=self.clients[client_id].train)
+                p.start()
+                processes.append(p)
+            for p in processes:
+                p.join()
+        else:
+            for client_id in client_ids:
+                self.clients[client_id].train()
 
         aggregated_weights = self.aggregate(list(self.clients.keys()))
         self.broadcast_weights(aggregated_weights)
