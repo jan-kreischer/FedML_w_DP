@@ -15,8 +15,9 @@ class Client:
         self.epochs = epochs
         self.id = client_id
         self.criterion = loss
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         self.is_private = is_private
+
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         if is_private:
             self.delta = 1 / (2 * len_data)
             SAMPLE_RATE = BATCH_SIZE / self.len_data
@@ -29,7 +30,11 @@ class Client:
                 max_grad_norm=MAX_GRAD_NORM,
             )
             privacy_engine.attach(self.optimizer)
-            print(f"Using sigma={privacy_engine.noise_multiplier} and C={MAX_GRAD_NORM}")
+
+            print(
+                f"[Client {self.id}]\t"
+                f"Using sigma={privacy_engine.noise_multiplier} and C={MAX_GRAD_NORM}"
+            )
 
     def receive_weights(self, model_params):
         """ Receive aggregated parameters, update model """
@@ -37,6 +42,9 @@ class Client:
 
     def train(self):
         """ FedSGD algorithm, change local parameters """
+
+        #print(f"Optimizer - After going into process : {dir(self.optimizer)}")
+
         self.model.train()
 
         for e in range(self.epochs):

@@ -1,12 +1,12 @@
 import torch
-from torch import nn
+from torch import nn, optim
 import copy
 from client import Client
 import numpy as np
 from typing import List, Dict
 from data import FedMNIST
 from opacus.dp_model_inspector import DPModelInspector
-import torch.multiprocessing as mp
+import threading
 
 
 class Server:
@@ -17,6 +17,7 @@ class Server:
         self.clients: Dict[int, Client] = {}
         inspector = DPModelInspector()
         assert inspector.validate(model), "The model is not valid"
+
         for i in range(self.nr_clients):
             data, len_data = fedmnist_data.get_client_data(client_id=i)
             self.clients[i] = Client(
@@ -74,14 +75,14 @@ class Server:
         client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  # permutation
 
         if self.is_parallel:
-            processes = []
+            threads = []
             for client_id in client_ids:
                 self.clients[client_id].model.share_memory()
-                p = mp.Process(target=self.clients[client_id].train)
-                p.start()
-                processes.append(p)
-            for p in processes:
-                p.join()
+                t = threading.Thread(target=Client.train, args=(self.clients[client_id],))
+                t.start()
+                threads.append(t)
+            for t in threads:
+                t.join()
         else:
             for client_id in client_ids:
                 self.clients[client_id].train()

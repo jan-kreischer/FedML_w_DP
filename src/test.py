@@ -2,9 +2,13 @@ from model import CNN
 from server import Server
 from constants import *
 import numpy as np
+import warnings
 
 if __name__ == "__main__":
-    server = Server(nr_clients=NR_CLIENTS, lr=LR, model=CNN(), epochs=CLIENT_EPOCHS, is_parallel=True)#, is_private=True)
+
+    warnings.filterwarnings("ignore")
+
+    server = Server(nr_clients=NR_CLIENTS, lr=LR, model=CNN(), epochs=CLIENT_EPOCHS, is_parallel=True, is_private=True)
     test_losses = []
     test_accs = []
     for nr_iter in range(NR_TRAINING_ITERATIONS):
