@@ -42,9 +42,6 @@ class Client:
 
     def train(self):
         """ FedSGD algorithm, change local parameters """
-
-        #print(f"Optimizer - After going into process : {dir(self.optimizer)}")
-
         self.model.train()
 
         for e in range(self.epochs):

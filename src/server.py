@@ -1,5 +1,5 @@
 import torch
-from torch import nn, optim
+from torch import nn
 import copy
 from client import Client
 import numpy as np
