@@ -9,6 +9,7 @@ from opacus.dp_model_inspector import DPModelInspector
 import threading
 from constants import DATA
 
+
 class Server:
     def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False, is_parallel=False):
         self.nr_clients = nr_clients
@@ -50,7 +51,7 @@ class Server:
         for client_id, params in client_params.items():
             client_weight = self.clients_len_data[client_id] / self.len_train_data
             for name in new_params:
-                new_params[name] += params[name]*client_weight  # averaging
+                new_params[name] += params[name] * client_weight  # averaging
         # set new parameters to global model
         self.global_model.load_state_dict(copy.deepcopy(new_params))
         return self.global_model.state_dict().copy()
@@ -73,13 +74,13 @@ class Server:
             nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
             len_test_data += len(images)
             # loss
-            test_loss += self.criterion(outputs,labels)
+            test_loss += self.criterion(outputs, labels)
 
         return nr_correct / len_test_data, test_loss.item()
 
     def global_update(self):
         # Permuatation of the clients
-        client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  
+        client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)
 
         if self.is_parallel:
             threads = []
