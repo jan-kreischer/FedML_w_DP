@@ -1,4 +1,4 @@
-from model import CNN
+from model import CNN, LogisticRegression
 from server import Server
 from constants import *
 import numpy as np
@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     warnings.filterwarnings("ignore")
 
-    server = Server(nr_clients=NR_CLIENTS, lr=LR, model=CNN(), epochs=CLIENT_EPOCHS, is_parallel=True, is_private=True)
+    server = Server(nr_clients=NR_CLIENTS, lr=LR, model=LogisticRegression(), epochs=CLIENT_EPOCHS, is_parallel=False, is_private=True)
     test_losses = []
     test_accs = []
     for nr_iter in range(NR_TRAINING_ITERATIONS):

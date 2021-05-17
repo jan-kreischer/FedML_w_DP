@@ -48,6 +48,7 @@ class Client:
             for i, (images, labels) in enumerate(self.train_loader):
                 self.optimizer.zero_grad()
                 output = self.model(images)
+
                 loss = self.criterion(output, labels)
                 loss.backward()
 

@@ -1,10 +1,10 @@
 import torch.utils.data
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, TensorDataset
 from torchvision import datasets, transforms
 from typing import Dict
 from opacus.utils.uniform_sampler import UniformWithReplacementSampler
 from constants import BATCH_SIZE
-
+from utils import *
 
 class FedMNIST:
     def __init__(self, nr_clients: int):
@@ -51,3 +51,55 @@ class FedMNIST:
                               sample_rate=BATCH_SIZE / len(self.data_train_split[client_id]),
                           )), \
                len(self.data_train_split[client_id])
+
+# TODO : optimize duplicated code
+
+class FedMed:
+    def __init__(self, nr_clients: int):
+        names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
+        data_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.data'
+        diagnosis_names = 'diagnosis.names'
+        diagnosis_data = 'diagnosis.data'
+        download_url(names_link, diagnosis_names)
+        download_url(data_link, diagnosis_data)
+
+        matrix = read_np_array(diagnosis_data)
+        n_samples, n_dimensions = matrix.shape
+
+        train_indexes, test_indexes = get_indexes_for_2_datasets(n_samples)
+
+        data_train_mat = matrix[train_indexes]
+        data_test_mat = matrix[test_indexes]
+
+        data_train_x = torch.Tensor(data_train_mat[:,:6])
+        data_train_y = torch.Tensor(data_train_mat[:,6:])
+        data_test_x = torch.Tensor(data_test_mat[:,:6])
+        data_test_y = torch.Tensor(data_test_mat[:,6:])
+
+        data_train = TensorDataset(data_train_x,data_train_y)
+        self.data_test = TensorDataset(data_test_x,data_test_y)
+
+        self.nr_clients = nr_clients
+        len_train = len(data_train)
+        self.len_client_data = {client_id: int(len_train / nr_clients) for client_id in range(nr_clients)}
+
+        rs = random_split(data_train, list(self.len_client_data.values()))
+
+        self.data_train_split: Dict[int, torch.utils.data.Subset] = {client_id: rs[client_id] for client_id in
+                                                                     range(nr_clients)}
+
+    # TODO : batch_size ?
+    def get_server_data(self):
+        test_data = DataLoader(self.data_test, shuffle=True)
+
+        return test_data, self.len_client_data
+
+    # TODO : it doesn't work with the batch_sampler, maybe because of the batch_size
+    def get_client_data(self, client_id: int):
+        return DataLoader(self.data_train_split[client_id]),len(self.data_train_split[client_id])
+                          #batch_sampler=UniformWithReplacementSampler(
+                          #    num_samples=len(self.data_train_split[client_id]),
+                          #    sample_rate=BATCH_SIZE/len(self.data_train_split[client_id]),
+                          #)), \
+               #len(self.data_train_split[client_id])
+

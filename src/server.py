@@ -4,22 +4,27 @@ import copy
 from client import Client
 import numpy as np
 from typing import List, Dict
-from data import FedMNIST
+from data import FedMNIST, FedMed
 from opacus.dp_model_inspector import DPModelInspector
 import threading
-
+from constants import DATA
 
 class Server:
     def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False, is_parallel=False):
         self.nr_clients = nr_clients
         self.lr = lr
-        fedmnist_data = FedMNIST(nr_clients)
+        if DATA == 'MNIST':
+            data_obj = FedMNIST(nr_clients)
+            loss = nn.NLLLoss()
+        elif DATA == 'Med':
+            data_obj = FedMed(nr_clients)
+            loss = torch.nn.BCELoss(size_average=True)
         self.clients: Dict[int, Client] = {}
         inspector = DPModelInspector()
         assert inspector.validate(model), "The model is not valid"
 
         for i in range(self.nr_clients):
-            data, len_data = fedmnist_data.get_client_data(client_id=i)
+            data, len_data = data_obj.get_client_data(client_id=i)
             self.clients[i] = Client(
                 model=copy.deepcopy(model),
                 data=data,
@@ -27,12 +32,13 @@ class Server:
                 lr=lr,
                 epochs=epochs,
                 client_id=i,
+                loss=loss,
                 is_private=is_private
             )
-        self.test_data, self.clients_len_data = fedmnist_data.get_server_data()
+        self.test_data, self.clients_len_data = data_obj.get_server_data()
         self.len_train_data = np.sum(list(self.clients_len_data.values()))
         self.global_model = model
-        self.criterion = nn.NLLLoss()
+        self.criterion = loss
         self.is_parallel = is_parallel
 
     def aggregate(self, client_ids: List[int]):
