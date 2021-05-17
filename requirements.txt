@@ -1,4 +1,4 @@
-torchvision~=0.9.1+cpu
-torch~=1.8.1+cpu
+torchvision~=0.9.1
+torch~=1.8.1
 numpy~=1.20.2
 opacus~=0.13.0

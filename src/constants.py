@@ -1,18 +1,27 @@
+<<<<<<< HEAD
 DATA = "Med" #or "MNIST"
 
 # Training parameters
+=======
+# --- TRAINING PARAMETERS ---
+>>>>>>> 98324aa3cd5773dae222a4dc06be7ade35fdf0ee
 NR_CLIENTS = 3
 LR = 0.01
 CLIENT_EPOCHS = 6
 NR_TRAINING_ITERATIONS = 3
+<<<<<<< HEAD
 
 if DATA == "Med":
     BATCH_SIZE = 2
 elif DATA == "MNIST":
     BATCH_SIZE = 128
+=======
+BATCH_SIZE = 128
+# Number of client training epochs.
+>>>>>>> 98324aa3cd5773dae222a4dc06be7ade35fdf0ee
 EPOCHS = 20
 
-# Differential privacy parameters
+# --- DIFFERENTIAL PRIVACY PARAMETERS ---
 MAX_GRAD_NORM = 1.2
 EPSILON = 60.0
 

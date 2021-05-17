@@ -78,7 +78,8 @@ class Server:
         return nr_correct / len_test_data, test_loss.item()
 
     def global_update(self):
-        client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  # permutation
+        # Permuatation of the clients
+        client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)  
 
         if self.is_parallel:
             threads = []
@@ -93,6 +94,7 @@ class Server:
             for client_id in client_ids:
                 self.clients[client_id].train()
 
+        # 
         aggregated_weights = self.aggregate(list(self.clients.keys()))
         self.broadcast_weights(aggregated_weights)
         test_acc, test_loss = self.compute_acc()

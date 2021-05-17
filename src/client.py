@@ -29,6 +29,7 @@ class Client:
                 target_delta=self.delta,
                 max_grad_norm=MAX_GRAD_NORM,
             )
+            # Attach the privacy engine to the optimizer before running
             privacy_engine.attach(self.optimizer)
 
             print(
@@ -41,7 +42,8 @@ class Client:
         self.model.load_state_dict(copy.deepcopy(model_params))
 
     def train(self):
-        """ FedSGD algorithm, change local parameters """
+        """ FedSGD algorithm, change local parameters
+        Put model into training mode."""
         self.model.train()
 
         for e in range(self.epochs):
@@ -57,7 +59,8 @@ class Client:
                     if ((i + 1) % N_ACCUMULATION_STEPS == 0) or ((i + 1) == self.len_data):
                         self.optimizer.step()
                     else:
-                        self.optimizer.virtual_step()  # take a virtual step
+                        # Take a virtual step
+                        self.optimizer.virtual_step()  
                 else:
                     self.optimizer.step()
 
