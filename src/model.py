@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+
 # from Torch MNIST example
 class CNN(nn.Module):
     def __init__(self):
@@ -27,6 +28,7 @@ class CNN(nn.Module):
         x = self.fc2(x)
         x = F.log_softmax(x, dim=1)
         return x
+
 
 # from https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
 # changed dimension of output

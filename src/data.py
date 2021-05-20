@@ -70,6 +70,10 @@ class FEMNIST:
 # TODO : optimize duplicated code
 
 class FedMed:
+    """
+    Acute Inflammations dataset from the Center for Machine Learning and Intelligent Systems at University of California
+    2 different classes, input has 6 attributes
+    """
     def __init__(self, nr_clients: int):
         names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
         data_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.data'
