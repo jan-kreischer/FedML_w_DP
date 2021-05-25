@@ -113,9 +113,10 @@ class Server:
 
         return test_loss, test_acc
 
-    def __call__(self, patience=3, delta=0.05):
+    def __call__(self, early=False, patience=3, delta=0.05):
 
-        early_stopping = EarlyStopping(patience=patience, delta=delta, verbose=self.verbose)
+        if early:
+            early_stopping = EarlyStopping(patience=patience, delta=delta, verbose=self.verbose)
 
         test_losses = []
         test_accs = []
@@ -125,13 +126,14 @@ class Server:
             test_losses.append(test_loss)
             test_accs.append(test_acc)
 
-            early_stopping(test_loss, self.global_model)
-            if early_stopping.early_stop:
-                print("Early stopping")
-                break
+            if early :
+                early_stopping(test_loss, self.global_model)
+                if early_stopping.early_stop:
+                    print("Early stopping")
+                    break
 
-        # load last model
-        self.global_model.load_state_dict(torch.load('checkpoint.pt'))
+        # load last model if early
+        if early : self.global_model.load_state_dict(torch.load('checkpoint.pt'))
 
         print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
         print(f"Test accuracies: {test_accs}")

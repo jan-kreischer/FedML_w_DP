@@ -13,4 +13,4 @@ if __name__ == "__main__":
                     is_private=False,
                     verbose="server")
 
-    server()
+    server(early=True)
