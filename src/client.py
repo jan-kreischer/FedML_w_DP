@@ -7,7 +7,7 @@ from constants import *
 
 class Client:
     def __init__(self, model: nn.Module, data: DataLoader, len_data: int, lr: float, epochs: int, client_id: int,
-                 loss=nn.NLLLoss(), is_private=False, verbose=False):
+                 loss=nn.NLLLoss(), is_private=False, verbose="all"):
         self.lr = lr
         self.model = model
         self.train_loader = data
@@ -16,7 +16,7 @@ class Client:
         self.id = client_id
         self.criterion = loss
         self.is_private = is_private
-        self.verbose=verbose
+        self.verbose = (verbose=="all" or verbose=="client")
 
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         if is_private:
@@ -33,10 +33,11 @@ class Client:
             # Attach the privacy engine to the optimizer before running
             privacy_engine.attach(self.optimizer)
 
-            print(
-                f"[Client {self.id}]\t"
-                f"Using sigma={privacy_engine.noise_multiplier} and C={MAX_GRAD_NORM}"
-            )
+            if self.verbose:
+                print(
+                    f"[Client {self.id}]\t"
+                    f"Using sigma={privacy_engine.noise_multiplier} and C={MAX_GRAD_NORM}"
+                )
 
     def receive_weights(self, model_params):
         """ Receive aggregated parameters, update model """

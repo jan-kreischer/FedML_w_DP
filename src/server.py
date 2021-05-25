@@ -7,18 +7,24 @@ from typing import List, Dict
 from data import FedMNIST, FedMed
 from opacus.dp_model_inspector import DPModelInspector
 import threading
-from constants import DATA
+from constants import DATA, NR_TRAINING_ROUNDS
+from pytorchtools import EarlyStopping
+from model import CNN, LogisticRegression
 
 class Server:
-    def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False, is_parallel=False, verbose=False):
+    def __init__(self, nr_clients: int, lr: float, epochs: int, is_private=False, is_parallel=False, verbose="all"):
         self.nr_clients = nr_clients
         self.lr = lr
+
         if DATA == 'MNIST':
             data_obj = FedMNIST(nr_clients)
             loss = nn.NLLLoss()
+            model = CNN()
         elif DATA == 'Med':
             data_obj = FedMed(nr_clients)
             loss = torch.nn.BCELoss(size_average=True)
+            model = LogisticRegression()
+
         self.clients: Dict[int, Client] = {}
         inspector = DPModelInspector()
         assert inspector.validate(model), "The model is not valid"
@@ -36,11 +42,13 @@ class Server:
                 is_private=is_private,
                 verbose=verbose,
             )
+
         self.test_data, self.clients_len_data = data_obj.get_server_data()
         self.len_train_data = np.sum(list(self.clients_len_data.values()))
         self.global_model = model
         self.criterion = loss
         self.is_parallel = is_parallel
+        self.verbose = (verbose=="server" or verbose=="all")
 
     def aggregate(self, client_ids: List[int]):
         """ FedAvg algorithm, averaging all parameters """
@@ -67,15 +75,15 @@ class Server:
         test_loss = 0
         nr_correct = 0
         len_test_data = 0
-        for images, labels in self.test_data:
-            outputs = self.global_model(images)
+        for attributes, labels in self.test_data:
+            outputs = self.global_model(attributes)
             # accuracy
             if DATA=='MNIST':
                 _, pred_labels = torch.max(outputs, 1)
             elif DATA=='Med':
                 pred_labels = torch.round(outputs)
             nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
-            len_test_data += len(images)
+            len_test_data += len(attributes)
             # loss
             test_loss += self.criterion(outputs, labels)
 
@@ -104,3 +112,27 @@ class Server:
         test_acc, test_loss = self.compute_acc()
 
         return test_loss, test_acc
+
+    def __call__(self, patience=3, delta=0.05):
+
+        early_stopping = EarlyStopping(patience=patience, delta=delta, verbose=self.verbose)
+
+        test_losses = []
+        test_accs = []
+        for training_round in range(NR_TRAINING_ROUNDS):
+            test_loss, test_acc = self.global_update()
+            if self.verbose: print(f"Round {training_round + 1}, test_loss: {test_loss:.4f}, test_acc: {test_acc}")
+            test_losses.append(test_loss)
+            test_accs.append(test_acc)
+
+            early_stopping(test_loss, self.global_model)
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
+
+        # load last model
+        self.global_model.load_state_dict(torch.load('checkpoint.pt'))
+
+        print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
+        print(f"Test accuracies: {test_accs}")
+        print("Finished")
