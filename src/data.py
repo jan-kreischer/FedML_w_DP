@@ -5,7 +5,9 @@ from typing import Dict
 from opacus.utils.uniform_sampler import UniformWithReplacementSampler
 from constants import BATCH_SIZE
 from utils import download_url, read_np_array, get_indexes_for_2_datasets
+import numpy as np
 
+# TODO : reformating
 
 class FedMNIST:
     """
@@ -59,22 +61,19 @@ class FedMNIST:
                len(self.data_train_split[client_id])
 
 
-class FEMNIST:
-    """
-    Federated Extended MNIST dataset
-    62 different classes (10 digits, 26 lowercase, 26 uppercase), images are 28x28
-    """
-    raise NotImplementedError
-
-
-# TODO : optimize duplicated code
+#class FEMNIST:
+#    """
+#    Federated Extended MNIST dataset
+#    62 different classes (10 digits, 26 lowercase, 26 uppercase), images are 28x28
+#    """
+#    raise NotImplementedError
 
 class FedMed:
     """
     Acute Inflammations dataset from the Center for Machine Learning and Intelligent Systems at University of California
     2 different classes, input has 6 attributes
     """
-    def __init__(self, nr_clients: int):
+    def __init__(self, nr_clients: int, pred='inflammation'):
         names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
         data_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.data'
         diagnosis_names = 'diagnosis.names'
@@ -91,9 +90,14 @@ class FedMed:
         data_test_mat = matrix[test_indexes]
 
         data_train_x = torch.Tensor(data_train_mat[:, :6])
-        data_train_y = torch.Tensor(data_train_mat[:, 6:])
         data_test_x = torch.Tensor(data_test_mat[:, :6])
-        data_test_y = torch.Tensor(data_test_mat[:, 6:])
+
+        if pred=='inflammation':
+            data_train_y = torch.Tensor(np.vstack(data_train_mat[:, 6]))
+            data_test_y = torch.Tensor(np.vstack(data_test_mat[:, 6]))
+        elif pred=='nephritis':
+            data_train_y = torch.Tensor(np.vstack(data_train_mat[:, 7]))
+            data_test_y = torch.Tensor(np.vstack(data_test_mat[:, 7]))
 
         data_train = TensorDataset(data_train_x, data_train_y)
         self.data_test = TensorDataset(data_test_x, data_test_y)
@@ -107,18 +111,15 @@ class FedMed:
         self.data_train_split: Dict[int, torch.utils.data.Subset] = {client_id: rs[client_id] for client_id in
                                                                      range(nr_clients)}
 
-    # TODO : batch_size ?
     def get_server_data(self):
-        test_data = DataLoader(self.data_test, shuffle=True)
-
+        test_data = DataLoader(self.data_test, batch_size=BATCH_SIZE, shuffle=True)
         return test_data, self.len_client_data
 
-    # TODO : it doesn't work with the batch_sampler, maybe because of the batch_size
     def get_client_data(self, client_id: int):
-        return DataLoader(self.data_train_split[client_id]), len(self.data_train_split[client_id])
-        # return DataLoader(self.data_train_split[client_id],
-        #                   batch_sampler=UniformWithReplacementSampler(
-        #                       num_samples=len(self.data_train_split[client_id]),
-        #                       sample_rate=BATCH_SIZE / len(self.data_train_split[client_id]),
-        #                   )), \
-        #        len(self.data_train_split[client_id])
+        return DataLoader(
+            self.data_train_split[client_id],
+                          batch_sampler=UniformWithReplacementSampler(
+                              num_samples=len(self.data_train_split[client_id]),
+                              sample_rate=BATCH_SIZE / len(self.data_train_split[client_id])
+                          )
+            ), len(self.data_train_split[client_id])

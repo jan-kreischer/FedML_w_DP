@@ -70,7 +70,10 @@ class Server:
         for images, labels in self.test_data:
             outputs = self.global_model(images)
             # accuracy
-            _, pred_labels = torch.max(outputs, 1)
+            if DATA=='MNIST':
+                _, pred_labels = torch.max(outputs, 1)
+            elif DATA=='Med':
+                pred_labels = torch.round(outputs)
             nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
             len_test_data += len(images)
             # loss
@@ -79,7 +82,7 @@ class Server:
         return nr_correct / len_test_data, test_loss.item()
 
     def global_update(self):
-        # Permuatation of the clients
+        # Permutation of the clients
         client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)
 
         if self.is_parallel:

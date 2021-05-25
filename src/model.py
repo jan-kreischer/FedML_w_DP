@@ -36,7 +36,9 @@ class LogisticRegression(torch.nn.Module):
 
     def __init__(self):
         super(LogisticRegression, self).__init__()
-        self.linear = torch.nn.Linear(6, 2)
+        self.linear = torch.nn.Linear(6, 1)
 
     def forward(self, x):
-        return torch.sigmoid(self.linear(x))
+        x = self.linear(x)
+        x = torch.sigmoid(x)
+        return x

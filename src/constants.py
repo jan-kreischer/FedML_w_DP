@@ -3,11 +3,11 @@ DATA = "Med"  # or "MNIST"
 # --- TRAINING PARAMETERS ---
 NR_CLIENTS = 3
 LR = 0.01
-CLIENT_EPOCHS = 6
-NR_TRAINING_ROUNDS = 3
+CLIENT_EPOCHS = 500
+NR_TRAINING_ROUNDS = 10
 
 if DATA == "Med":
-    BATCH_SIZE = 2
+    BATCH_SIZE = 10
 elif DATA == "MNIST":
     BATCH_SIZE = 128
 # Number of client training epochs.

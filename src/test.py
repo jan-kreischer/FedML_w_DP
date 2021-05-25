@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     warnings.filterwarnings("ignore")
 
-    server = Server(nr_clients=NR_CLIENTS, lr=LR, model=LogisticRegression(), epochs=CLIENT_EPOCHS, is_parallel=False,
+    server = Server(nr_clients=NR_CLIENTS, lr=LR, model=LogisticRegression(), epochs=CLIENT_EPOCHS, is_parallel=True,
                     is_private=True)
     test_losses = []
     test_accs = []
