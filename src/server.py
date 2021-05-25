@@ -9,9 +9,8 @@ from opacus.dp_model_inspector import DPModelInspector
 import threading
 from constants import DATA
 
-
 class Server:
-    def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False, is_parallel=False):
+    def __init__(self, nr_clients: int, lr: float, model: nn.Module, epochs: int, is_private=False, is_parallel=False, verbose=False):
         self.nr_clients = nr_clients
         self.lr = lr
         if DATA == 'MNIST':
@@ -34,7 +33,8 @@ class Server:
                 epochs=epochs,
                 client_id=i,
                 loss=loss,
-                is_private=is_private
+                is_private=is_private,
+                verbose=verbose,
             )
         self.test_data, self.clients_len_data = data_obj.get_server_data()
         self.len_train_data = np.sum(list(self.clients_len_data.values()))

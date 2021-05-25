@@ -7,7 +7,7 @@ from constants import *
 
 class Client:
     def __init__(self, model: nn.Module, data: DataLoader, len_data: int, lr: float, epochs: int, client_id: int,
-                 loss=nn.NLLLoss(), is_private=False):
+                 loss=nn.NLLLoss(), is_private=False, verbose=False):
         self.lr = lr
         self.model = model
         self.train_loader = data
@@ -16,6 +16,7 @@ class Client:
         self.id = client_id
         self.criterion = loss
         self.is_private = is_private
+        self.verbose=verbose
 
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         if is_private:
@@ -64,14 +65,15 @@ class Client:
                 else:
                     self.optimizer.step()
 
-            print(
-                f"[Client {self.id}]\t"
-                f"Train Epoch: {e}\t"
-                f"Loss: {loss.item():.4f}"
-            )
+            if self.verbose:
+                print(
+                    f"[Client {self.id}]\t"
+                    f"Train Epoch: {e}\t"
+                    f"Loss: {loss.item():.4f}"
+                )
 
             if self.is_private:
                 epsilon, best_alpha = self.optimizer.privacy_engine.get_privacy_spent(self.delta)
-                print(f"\t(ε = {epsilon:.2f}, δ = {self.delta}) for α = {best_alpha}")
+                if self.verbose: print(f"\t(ε = {epsilon:.2f}, δ = {self.delta}) for α = {best_alpha}")
 
-        print(f"Client {self.id} - done")
+        if self.verbose: print(f"Client {self.id} - done")
