@@ -1,17 +1,26 @@
 DATA = "Med"  # or "MNIST"
 
 # --- TRAINING PARAMETERS ---
+# Number of distributed clients participating in the training process.
 NR_CLIENTS = 3
+
+#
 LR = 0.01
-CLIENT_EPOCHS = 300
+
+# Number of client training epochs.
+CLIENT_EPOCHS = 10
+EPOCHS = 10
+
+# Number of times the server is supposed to perform a global
+# update step by aggregating the trained models from the clients.
 NR_TRAINING_ROUNDS = 20
 
+# Batch sizes 
 if DATA == "Med":
     BATCH_SIZE = 10
 elif DATA == "MNIST":
     BATCH_SIZE = 128
-# Number of client training epochs.
-EPOCHS = 20
+
 
 # --- DIFFERENTIAL PRIVACY PARAMETERS ---
 MAX_GRAD_NORM = 1.2

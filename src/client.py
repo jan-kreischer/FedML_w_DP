@@ -6,6 +6,19 @@ from constants import *
 
 
 class Client:
+    '''
+    @param self:
+    @param model:
+    @param data: DataLoader enables to iteratively access a dataset in batches
+    @param len_data
+    @param lr:
+    @param epochs:
+    @param client_id:
+    @param loss:
+    @param is_private:
+    @param verbose:
+    @return:
+    '''
     def __init__(self, model: nn.Module, data: DataLoader, len_data: int, lr: float, epochs: int, client_id: int,
                  loss=nn.NLLLoss(), is_private=False, verbose="all"):
         self.lr = lr
@@ -47,12 +60,13 @@ class Client:
         """ FedSGD algorithm, change local parameters
         Put model into training mode."""
         self.model.train()
-
+        
+        # Train the model for n epochs before aggregating
         for e in range(self.epochs):
             for i, (images, labels) in enumerate(self.train_loader):
+                # Setting gradients to zero before starting backpropragation 
                 self.optimizer.zero_grad()
                 output = self.model(images)
-
                 loss = self.criterion(output, labels)
                 loss.backward()
 

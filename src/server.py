@@ -12,6 +12,13 @@ from pytorchtools import EarlyStopping
 from model import CNN, LogisticRegression
 
 class Server:
+    '''
+    @param self:
+    @param nr_clients: The number of clients participating in the collaborative model creation
+    @param lr:
+    @param epochs: 
+    @return:
+    '''
     def __init__(self, nr_clients: int, lr: float, epochs: int, is_private=False, is_parallel=False, verbose="all"):
         self.nr_clients = nr_clients
         self.lr = lr
