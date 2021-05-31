@@ -38,7 +38,7 @@ class Client:
             privacy_engine = PrivacyEngine(
                 self.model,
                 sample_rate=SAMPLE_RATE * N_ACCUMULATION_STEPS,
-                epochs=EPOCHS,
+                epochs=self.epochs,
                 target_epsilon=EPSILON_TRAINING_ITERATION,
                 target_delta=self.delta,
                 max_grad_norm=MAX_GRAD_NORM,

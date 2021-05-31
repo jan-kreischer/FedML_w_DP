@@ -9,7 +9,6 @@ LR = 0.01
 
 # Number of client training epochs.
 CLIENT_EPOCHS = 10
-EPOCHS = 10
 
 # Number of times the server is supposed to perform a global
 # update step by aggregating the trained models from the clients.
