@@ -6,7 +6,7 @@ from constants import *
 
 
 class Client:
-    '''
+    """
     @param self:
     @param model:
     @param data: DataLoader enables to iteratively access a dataset in batches
@@ -18,7 +18,8 @@ class Client:
     @param is_private:
     @param verbose:
     @return:
-    '''
+    """
+
     def __init__(self, model: nn.Module, data: DataLoader, len_data: int, lr: float, epochs: int, client_id: int,
                  loss=nn.NLLLoss(), is_private=False, verbose="all"):
         self.lr = lr
@@ -29,7 +30,7 @@ class Client:
         self.id = client_id
         self.criterion = loss
         self.is_private = is_private
-        self.verbose = (verbose=="all" or verbose=="client")
+        self.verbose = (verbose == "all" or verbose == "client")
 
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         if is_private:
@@ -60,11 +61,11 @@ class Client:
         """ FedSGD algorithm, change local parameters
         Put model into training mode."""
         self.model.train()
-        
+
         # Train the model for n epochs before aggregating
         for e in range(self.epochs):
             for i, (images, labels) in enumerate(self.train_loader):
-                # Setting gradients to zero before starting backpropragation 
+                # Setting gradients to zero before starting backpropagation
                 self.optimizer.zero_grad()
                 output = self.model(images)
                 loss = self.criterion(output, labels)
@@ -76,7 +77,7 @@ class Client:
                         self.optimizer.step()
                     else:
                         # Take a virtual step
-                        self.optimizer.virtual_step()  
+                        self.optimizer.virtual_step()
                 else:
                     self.optimizer.step()
 
@@ -91,4 +92,5 @@ class Client:
                 epsilon, best_alpha = self.optimizer.privacy_engine.get_privacy_spent(self.delta)
                 if self.verbose: print(f"\t(ε = {epsilon:.2f}, δ = {self.delta}) for α = {best_alpha}")
 
-        if self.verbose: print(f"Client {self.id} - done")
+        if self.verbose:
+            print(f"Client {self.id} - done")

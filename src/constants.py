@@ -4,7 +4,7 @@ DATA = "Med"  # or "MNIST"
 # Number of distributed clients participating in the training process.
 NR_CLIENTS = 3
 
-#
+# Learning Rate
 LR = 0.01
 
 # Number of client training epochs.
@@ -19,6 +19,8 @@ if DATA == "Med":
     BATCH_SIZE = 10
 elif DATA == "MNIST":
     BATCH_SIZE = 128
+else:
+    raise NotImplementedError
 
 
 # --- DIFFERENTIAL PRIVACY PARAMETERS ---

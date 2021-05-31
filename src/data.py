@@ -7,7 +7,8 @@ from constants import BATCH_SIZE
 from utils import download_url, read_np_array, get_indexes_for_2_datasets
 import numpy as np
 
-# TODO : reformating
+
+# TODO : reformatting
 
 class FedMNIST:
     """
@@ -61,7 +62,7 @@ class FedMNIST:
                len(self.data_train_split[client_id])
 
 
-#class FEMNIST:
+# class FEMNIST:
 #    """
 #    Federated Extended MNIST dataset
 #    62 different classes (10 digits, 26 lowercase, 26 uppercase), images are 28x28
@@ -73,6 +74,7 @@ class FedMed:
     Acute Inflammations dataset from the Center for Machine Learning and Intelligent Systems at University of California
     2 different classes, input has 6 attributes
     """
+
     def __init__(self, nr_clients: int, pred='inflammation'):
         names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
         data_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.data'
@@ -92,12 +94,14 @@ class FedMed:
         data_train_x = torch.Tensor(data_train_mat[:, :6])
         data_test_x = torch.Tensor(data_test_mat[:, :6])
 
-        if pred=='inflammation':
+        if pred == 'inflammation':
             data_train_y = torch.Tensor(np.vstack(data_train_mat[:, 6]))
             data_test_y = torch.Tensor(np.vstack(data_test_mat[:, 6]))
-        elif pred=='nephritis':
+        elif pred == 'nephritis':
             data_train_y = torch.Tensor(np.vstack(data_train_mat[:, 7]))
             data_test_y = torch.Tensor(np.vstack(data_test_mat[:, 7]))
+        else:
+            raise ValueError(f"Feature {pred} does not exist!")
 
         data_train = TensorDataset(data_train_x, data_train_y)
         self.data_test = TensorDataset(data_test_x, data_test_y)
@@ -118,8 +122,8 @@ class FedMed:
     def get_client_data(self, client_id: int):
         return DataLoader(
             self.data_train_split[client_id],
-                          batch_sampler=UniformWithReplacementSampler(
-                              num_samples=len(self.data_train_split[client_id]),
-                              sample_rate=BATCH_SIZE / len(self.data_train_split[client_id])
-                          )
-            ), len(self.data_train_split[client_id])
+            batch_sampler=UniformWithReplacementSampler(
+                num_samples=len(self.data_train_split[client_id]),
+                sample_rate=BATCH_SIZE / len(self.data_train_split[client_id])
+            )
+        ), len(self.data_train_split[client_id])

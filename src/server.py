@@ -11,14 +11,16 @@ from constants import DATA, NR_TRAINING_ROUNDS
 from pytorchtools import EarlyStopping
 from model import CNN, LogisticRegression
 
+
 class Server:
-    '''
+    """
     @param self:
     @param nr_clients: The number of clients participating in the collaborative model creation
     @param lr:
     @param epochs: 
     @return:
-    '''
+    """
+
     def __init__(self, nr_clients: int, lr: float, epochs: int, is_private=False, is_parallel=False, verbose="all"):
         self.nr_clients = nr_clients
         self.lr = lr
@@ -55,7 +57,7 @@ class Server:
         self.global_model = model
         self.criterion = loss
         self.is_parallel = is_parallel
-        self.verbose = (verbose=="server" or verbose=="all")
+        self.verbose = (verbose == "server" or verbose == "all")
 
     def aggregate(self, client_ids: List[int]):
         """ FedAvg algorithm, averaging all parameters """
@@ -85,10 +87,12 @@ class Server:
         for attributes, labels in self.test_data:
             outputs = self.global_model(attributes)
             # accuracy
-            if DATA=='MNIST':
-                _, pred_labels = torch.max(outputs, 1)
-            elif DATA=='Med':
+            if DATA == 'MNIST':
+                pred_labels = torch.argmax(outputs, dim=1)
+            elif DATA == 'Med':
                 pred_labels = torch.round(outputs)
+            else:
+                raise NotImplementedError
             nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
             len_test_data += len(attributes)
             # loss
@@ -133,14 +137,14 @@ class Server:
             test_losses.append(test_loss)
             test_accs.append(test_acc)
 
-            if early :
+            if early:
                 early_stopping(test_loss, self.global_model)
                 if early_stopping.early_stop:
                     print("Early stopping")
                     break
 
         # load last model if early
-        if early : self.global_model.load_state_dict(torch.load('checkpoint.pt'))
+        if early: self.global_model.load_state_dict(torch.load('checkpoint.pt'))
 
         print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
         print(f"Test accuracies: {test_accs}")
