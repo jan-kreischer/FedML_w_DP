@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader, random_split, TensorDataset
 from torchvision import datasets, transforms
 from typing import Dict
 from opacus.utils.uniform_sampler import UniformWithReplacementSampler
-from constants import BATCH_SIZE
+#from constants import BATCH_SIZE
 from utils import download_url, read_np_array, get_indexes_for_2_datasets
 import numpy as np
 
@@ -16,7 +16,9 @@ class FedMNIST:
     10 different classes (10 digits), images are 28x28
     """
 
-    def __init__(self, nr_clients: int):
+    def __init__(self, nr_clients: int, batch_size: int):
+        self.batch_size = batch_size
+        
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,))
@@ -57,7 +59,7 @@ class FedMNIST:
         return DataLoader(self.data_train_split[client_id],
                           batch_sampler=UniformWithReplacementSampler(
                               num_samples=len(self.data_train_split[client_id]),
-                              sample_rate=BATCH_SIZE / len(self.data_train_split[client_id]),
+                              sample_rate=self.batch_size / len(self.data_train_split[client_id]),
                           )), \
                len(self.data_train_split[client_id])
 
@@ -75,7 +77,9 @@ class FedMed:
     2 different classes, input has 6 attributes
     """
 
-    def __init__(self, nr_clients: int, pred='inflammation'):
+    def __init__(self, nr_clients: int, batch_size: int, pred='inflammation'):
+        self.batch_size = batch_size
+        
         names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
         data_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.data'
         diagnosis_names = 'diagnosis.names'
@@ -116,7 +120,7 @@ class FedMed:
                                                                      range(nr_clients)}
 
     def get_server_data(self):
-        test_data = DataLoader(self.data_test, batch_size=BATCH_SIZE, shuffle=True)
+        test_data = DataLoader(self.data_test, batch_size=self.batch_size, shuffle=True)
         return test_data, self.len_client_data
 
     def get_client_data(self, client_id: int):
@@ -124,6 +128,6 @@ class FedMed:
             self.data_train_split[client_id],
             batch_sampler=UniformWithReplacementSampler(
                 num_samples=len(self.data_train_split[client_id]),
-                sample_rate=BATCH_SIZE / len(self.data_train_split[client_id])
+                sample_rate=self.batch_size / len(self.data_train_split[client_id])
             )
         ), len(self.data_train_split[client_id])

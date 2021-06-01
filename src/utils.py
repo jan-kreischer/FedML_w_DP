@@ -1,5 +1,7 @@
 import numpy as np
 import urllib.request
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 
 # most of the code comes from https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
 
@@ -63,3 +65,27 @@ def get_indexes_for_2_datasets(n, training = 80):
 def print_dataset(name, data):
     print('Dataset {}. Shape: {}'.format(name, data.shape))
     print(data)
+    
+def plot_metrics(test_losses, test_accs):
+    assert len(test_losses) == len(test_accs)
+    epochs = range(len(test_losses))
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.suptitle('Test loss and accuracy')
+    fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=None)
+    fig.set_figheight(6)
+    fig.set_figwidth(12)
+
+    #ax1.set_xscale('log')
+    ax1.set_ylabel("Validation loss")
+    ax1.set_xlabel("Epoch")
+    ax1.plot(epochs, test_losses, label = "train")
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    #ax1.plot(metrics["neurons"], metrics["min_val_loss"], label = "val")
+
+    #ax2.set_xscale('log')
+    ax2.set_ylabel("Validation accuracy")
+    ax2.set_xlabel("Epoch")
+    ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax2.plot(epochs, test_accs, label = "train");
+    
+  

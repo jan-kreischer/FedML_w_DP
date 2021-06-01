@@ -7,7 +7,7 @@ from typing import List, Dict
 from data import FedMNIST, FedMed
 from opacus.dp_model_inspector import DPModelInspector
 import threading
-from constants import DATA, NR_TRAINING_ROUNDS
+#from constants import DATA, NR_TRAINING_ROUNDS
 from pytorchtools import EarlyStopping
 from model import CNN, LogisticRegression
 
@@ -21,16 +21,32 @@ class Server:
     @return:
     """
 
-    def __init__(self, nr_clients: int, lr: float, epochs: int, is_private=False, is_parallel=False, verbose="all"):
+    def __init__(self, 
+                 nr_clients: int,
+                 nr_training_rounds: int,
+                 lr: float,
+                 epochs: int,
+                 data: str,
+                 batch_size: int,
+                 max_grad_norm: float,
+                 epsilon: float,
+                 n_accumulation_steps: int,
+                 epsilon_training_iteration: float,
+                 is_private=False,
+                 is_parallel=False,
+                 verbose="all"):
         self.nr_clients = nr_clients
         self.lr = lr
-
-        if DATA == 'MNIST':
-            data_obj = FedMNIST(nr_clients)
+        self.nr_training_rounds = nr_training_rounds
+        self.data = data
+        
+        if self.data == 'MNIST':
+            print(self.nr_clients)
+            data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
             model = CNN()
-        elif DATA == 'Med':
-            data_obj = FedMed(nr_clients)
+        elif self.data == 'Med':
+            data_obj = FedMed(nr_clients, batch_size=batch_size)
             loss = torch.nn.BCELoss(size_average=True)
             model = LogisticRegression()
 
@@ -46,6 +62,10 @@ class Server:
                 len_data=len_data,
                 lr=lr,
                 epochs=epochs,
+                batch_size=batch_size,
+                n_accumulation_steps=n_accumulation_steps,
+                epsilon_training_iteration=epsilon_training_iteration,
+                max_grad_norm=max_grad_norm,
                 client_id=i,
                 loss=loss,
                 is_private=is_private,
@@ -87,9 +107,9 @@ class Server:
         for attributes, labels in self.test_data:
             outputs = self.global_model(attributes)
             # accuracy
-            if DATA == 'MNIST':
+            if self.data == 'MNIST':
                 pred_labels = torch.argmax(outputs, dim=1)
-            elif DATA == 'Med':
+            elif self.data == 'Med':
                 pred_labels = torch.round(outputs)
             else:
                 raise NotImplementedError
@@ -131,7 +151,7 @@ class Server:
 
         test_losses = []
         test_accs = []
-        for training_round in range(NR_TRAINING_ROUNDS):
+        for training_round in range(self.nr_training_rounds):
             test_loss, test_acc = self.global_update()
             if self.verbose: print(f"Round {training_round + 1}, test_loss: {test_loss:.4f}, test_acc: {test_acc}")
             test_losses.append(test_loss)
@@ -145,7 +165,8 @@ class Server:
 
         # load last model if early
         if early: self.global_model.load_state_dict(torch.load('checkpoint.pt'))
-
+        
         print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
         print(f"Test accuracies: {test_accs}")
         print("Finished")
+        return test_losses, test_accs

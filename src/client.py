@@ -2,7 +2,7 @@ from torch import nn, optim
 import copy
 from torch.utils.data import DataLoader
 from opacus import PrivacyEngine
-from constants import *
+#from constants import *
 
 
 class Client:
@@ -20,7 +20,7 @@ class Client:
     @return:
     """
 
-    def __init__(self, model: nn.Module, data: DataLoader, len_data: int, lr: float, epochs: int, client_id: int,
+    def __init__(self, model: nn.Module, data: DataLoader, len_data: int, lr: float, epochs: int, batch_size: int, n_accumulation_steps: int, epsilon_training_iteration: float, max_grad_norm: float, client_id: int,
                  loss=nn.NLLLoss(), is_private=False, verbose="all"):
         self.lr = lr
         self.model = model
@@ -31,18 +31,22 @@ class Client:
         self.criterion = loss
         self.is_private = is_private
         self.verbose = (verbose == "all" or verbose == "client")
+        self.batch_size = batch_size
+        self.n_accumulation_steps = n_accumulation_steps
+        self.epsilon_training_iteration=epsilon_training_iteration
+        self.max_grad_norm=max_grad_norm
 
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         if is_private:
             self.delta = 1 / (2 * len_data)
-            SAMPLE_RATE = BATCH_SIZE / self.len_data
+            sample_rate = self.batch_size / self.len_data
             privacy_engine = PrivacyEngine(
                 self.model,
-                sample_rate=SAMPLE_RATE * N_ACCUMULATION_STEPS,
+                sample_rate=sample_rate * self.n_accumulation_steps,
                 epochs=self.epochs,
-                target_epsilon=EPSILON_TRAINING_ITERATION,
+                target_epsilon=self.epsilon_training_iteration,
                 target_delta=self.delta,
-                max_grad_norm=MAX_GRAD_NORM,
+                max_grad_norm=max_grad_norm,
             )
             # Attach the privacy engine to the optimizer before running
             privacy_engine.attach(self.optimizer)
@@ -50,7 +54,7 @@ class Client:
             if self.verbose:
                 print(
                     f"[Client {self.id}]\t"
-                    f"Using sigma={privacy_engine.noise_multiplier} and C={MAX_GRAD_NORM}"
+                    f"Using sigma={privacy_engine.noise_multiplier} and C={max_grad_norm}"
                 )
 
     def receive_weights(self, model_params):
@@ -73,7 +77,7 @@ class Client:
 
                 if self.is_private:
                     # take a real optimizer step after N_VIRTUAL_STEP steps t
-                    if ((i + 1) % N_ACCUMULATION_STEPS == 0) or ((i + 1) == self.len_data):
+                    if ((i + 1) % self.n_accumulation_steps == 0) or ((i + 1) == self.len_data):
                         self.optimizer.step()
                     else:
                         # Take a virtual step
