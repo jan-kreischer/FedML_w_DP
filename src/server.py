@@ -4,9 +4,10 @@ import copy
 from client import Client
 import numpy as np
 from typing import List, Dict
-from data import FedMNIST, FedMed
+from data import FedMNIST, FedEMNIST, FedMed
 from opacus.dp_model_inspector import DPModelInspector
 import threading
+import numpy as np
 #from constants import DATA, NR_TRAINING_ROUNDS
 from pytorchtools import EarlyStopping
 from model import CNN, LogisticRegression
@@ -43,6 +44,11 @@ class Server:
         if self.data == 'MNIST':
             print(self.nr_clients)
             data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
+            loss = nn.NLLLoss()
+            model = CNN()
+        if self.data == 'EMNIST':
+            print(self.nr_clients)
+            data_obj = FedEMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
             model = CNN()
         elif self.data == 'Med':
@@ -121,6 +127,7 @@ class Server:
         return nr_correct / len_test_data, test_loss.item()
 
     def global_update(self):
+        print("called global update")
         # Permutation of the clients
         client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)
 
@@ -145,7 +152,7 @@ class Server:
         return test_loss, test_acc
 
     def __call__(self, early=False, patience=3, delta=0.05):
-
+        self.verbose="all"
         if early:
             early_stopping = EarlyStopping(patience=patience, delta=delta, verbose=self.verbose)
 
