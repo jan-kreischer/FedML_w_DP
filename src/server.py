@@ -4,7 +4,7 @@ import copy
 from client import Client
 import numpy as np
 from typing import List, Dict
-from data import FedMNIST, FedEMNIST, FedMed
+from data import FedMNIST, FEMNIST, FedMed
 from opacus.dp_model_inspector import DPModelInspector
 import threading
 import numpy as np
@@ -46,9 +46,9 @@ class Server:
             data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
             model = CNN()
-        if self.data == 'EMNIST':
+        if self.data == 'FEMNIST':
             print(self.nr_clients)
-            data_obj = FedEMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
+            data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
             model = CNN()
         elif self.data == 'Med':

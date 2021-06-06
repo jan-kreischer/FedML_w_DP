@@ -64,40 +64,70 @@ class FedMNIST:
 
 # TODO : reformatting
 
+
 class FEMNIST:
     """
     MNIST dataset, with samples randomly equally distributed among clients
     10 different classes (10 digits), images are 28x28
     """
-
+    def chunks(self, X, y, size):
+        return ((X[i::size], y[i::size]) for i in range(size))
+    
     def __init__(self, nr_clients: int, batch_size: int):
         self.batch_size = batch_size
         print("init femnist")
         import json
-        
-        f_train = open('./data/FEMNIST/train/femnist-01.json',)
-        training_dataset = json.load(f_train)
-    
-        f_test = open('./data/FEMNIST/test/femnist-01.json',)
-        test_dataset = json.load(f_test)
+        import os,json
 
-        client_id = 0
+        # --- Load Training Data ---
+        print("Starting To Load Training Data")
         self.data_train_split = {}
-
-        for user_id, user_data in training_dataset["user_data"].items():
-            ys = user_data["y"]
-            Xs = user_data["x"]
-            y_train_tensor = torch.Tensor(ys)
-            X_train_tensor = torch.Tensor(Xs)
-            client_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+        self.len_client_data = {}
+        data_path = './data/FEMNIST/train/'
+        
+        ys = []
+        Xs = []
+        for file_name in [file for file in os.listdir(data_path) if file.endswith('.json')]:
+            with open(data_path + file_name) as f:
+                print(f)
+                dataset = json.load(f)
+                for user_id, user_data in dataset["user_data"].items():
+                    #print(user_id)
+                    ys +=user_data["y"]
+                    Xs +=user_data["x"]
+        print(len(ys))
+        print(len(Xs))
+        
+        
+        client_id = 0
+        for X_chunk, y_chunk in self.chunks(Xs, ys, nr_clients):
+            #print(len(X_chunk))
+            self.len_client_data[client_id] = len(X_chunk)
+            client_dataset = TensorDataset(torch.Tensor(X_chunk), torch.Tensor(y_chunk))
             client_subset = torch.utils.data.Subset(client_dataset, indices=np.arange(len(client_dataset)))
             self.data_train_split[client_id] = client_subset
-            client_id=client_id + 1
-            print("preparing data for client {}".format(client_id))
+            client_id +=1
+            
+        print("Finished Loading Training Data")
 
+        # --- Load Testing Data ---
+        data_path = './data/FEMNIST/test/'
+        ys = []
+        Xs = []
+        for file_name in [file for file in os.listdir(data_path) if file.endswith('.json')]:      
+            with open(data_path + file_name) as f:
+                print(f)
+                dataset = json.load(f)
+                for user_id, user_data in dataset["user_data"].items():
+                    ys +=user_data["y"]
+                    Xs +=user_data["x"]
+
+        #print(len(ys))
+        #print(len(Xs))
+        self.data_test = TensorDataset(torch.Tensor(Xs), torch.Tensor(ys))
+        
     def get_server_data(self, batch_size: int = 64):
         test_data = DataLoader(self.data_test, batch_size=batch_size, shuffle=True)
-
         return test_data, self.len_client_data
 
     def get_client_data(self, client_id: int):
@@ -114,6 +144,7 @@ class FEMNIST:
 #    62 different classes (10 digits, 26 lowercase, 26 uppercase), images are 28x28
 #    """
 #    raise NotImplementedError
+
 
 class FedMed:
     """
