@@ -1,13 +1,14 @@
+import os
 import torch.utils.data
 from torch.utils.data import DataLoader, random_split, TensorDataset, Subset
 from torchvision import datasets, transforms
 from typing import Dict
 from opacus.utils.uniform_sampler import UniformWithReplacementSampler
-#from constants import BATCH_SIZE
 from utils import download_url, read_np_array, get_indexes_for_2_datasets
 import numpy as np
-
-# TODO : reformatting
+import json
+import matplotlib.pyplot as plt
+from numpy.random import choice
 
 class FedMNIST:
     """
@@ -75,15 +76,12 @@ class FEMNIST:
     
     def __init__(self, nr_clients: int, batch_size: int):
         self.batch_size = batch_size
-        print("init femnist")
-        import json
-        import os,json
 
         # --- Load Training Data ---
         print("Starting To Load Training Data")
         self.data_train_split = {}
         self.len_client_data = {}
-        data_path = './data/FEMNIST/train/'
+        data_path = './data/FEMNIST/old/train/'
         
         ys = []
         Xs = []
@@ -92,18 +90,28 @@ class FEMNIST:
                 print(f)
                 dataset = json.load(f)
                 for user_id, user_data in dataset["user_data"].items():
-                    #print(user_id)
-                    ys +=user_data["y"]
-                    Xs +=user_data["x"]
-        print(len(ys))
-        print(len(Xs))
-        
-        
+                    ys_unfiltered =user_data["y"]
+                    Xs_unfiltered =user_data["x"]
+                    
+                    ys_unfiltered += user_data["y"]
+                    Xs_unfiltered += user_data["x"]
+                    if(len(ys_unfiltered)>0):
+                        try:
+                            ys_filtered, Xs_filtered = zip(*((ys_unfiltered, Xs_unfiltered) for ys_unfiltered, Xs_unfiltered in zip(ys_unfiltered, Xs_unfiltered) if ys_unfiltered in range(10)))
+                        except ValueError as e:
+                            ys_filtered = []
+                            Xs_filtered = []
+                    if(len(ys_filtered)>0):
+                        #convert from float to long
+                        ys_filtered = [int(y) for y in ys_filtered]                       
+                        ys += ys_filtered
+                        Xs += Xs_filtered
+
         client_id = 0
         for X_chunk, y_chunk in self.chunks(Xs, ys, nr_clients):
-            #print(len(X_chunk))
+
             self.len_client_data[client_id] = len(X_chunk)
-            client_dataset = TensorDataset(torch.Tensor(X_chunk), torch.Tensor(y_chunk))
+            client_dataset = TensorDataset(torch.reshape(torch.Tensor(X_chunk), (-1, 1, 28, 28)), torch.LongTensor(y_chunk))
             client_subset = torch.utils.data.Subset(client_dataset, indices=np.arange(len(client_dataset)))
             self.data_train_split[client_id] = client_subset
             client_id +=1
@@ -111,7 +119,8 @@ class FEMNIST:
         print("Finished Loading Training Data")
 
         # --- Load Testing Data ---
-        data_path = './data/FEMNIST/test/'
+        print("Starting To Load Test Data")
+        data_path = './data/FEMNIST/old/test/'
         ys = []
         Xs = []
         for file_name in [file for file in os.listdir(data_path) if file.endswith('.json')]:      
@@ -119,12 +128,26 @@ class FEMNIST:
                 print(f)
                 dataset = json.load(f)
                 for user_id, user_data in dataset["user_data"].items():
-                    ys +=user_data["y"]
-                    Xs +=user_data["x"]
+                    ys_unfiltered =user_data["y"]
+                    Xs_unfiltered =user_data["x"]
+                    
+                    ys_unfiltered += user_data["y"]
+                    Xs_unfiltered += user_data["x"]
+                    if(len(ys_unfiltered)>0):
+                        try:
+                            ys_filtered, Xs_filtered = zip(*((ys_unfiltered, Xs_unfiltered) for ys_unfiltered, Xs_unfiltered in zip(ys_unfiltered, Xs_unfiltered) if ys_unfiltered in range(10)))
+                        except ValueError as e:
+                            ys_filtered = []
+                            Xs_filtered = []
+                    if(len(ys_filtered)>0):
+                        #convert from float to long
+                        ys_filtered = [int(y) for y in ys_filtered]
+                        
+                        ys += ys_filtered
+                        Xs += Xs_filtered  
+        print("Finished Loading Training Data")
 
-        #print(len(ys))
-        #print(len(Xs))
-        self.data_test = TensorDataset(torch.Tensor(Xs), torch.Tensor(ys))
+        self.data_test = TensorDataset(torch.reshape(torch.Tensor(Xs), (-1, 1, 28, 28)), torch.LongTensor(ys))
         
     def get_server_data(self, batch_size: int = 64):
         test_data = DataLoader(self.data_test, batch_size=batch_size, shuffle=True)
@@ -157,8 +180,8 @@ class FedMed:
         
         names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
         data_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.data'
-        diagnosis_names = 'diagnosis.names'
-        diagnosis_data = 'diagnosis.data'
+        diagnosis_names = './data/MED/diagnosis.names'
+        diagnosis_data = './data/MED/diagnosis.data'
         download_url(names_link, diagnosis_names)
         download_url(data_link, diagnosis_data)
 

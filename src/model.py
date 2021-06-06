@@ -29,7 +29,6 @@ class CNN(nn.Module):
         x = F.log_softmax(x, dim=1)
         return x
 
-
 # from https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
 # changed dimension of output
 class LogisticRegression(torch.nn.Module):

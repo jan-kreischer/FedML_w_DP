@@ -88,4 +88,35 @@ def plot_metrics(test_losses, test_accs):
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax2.plot(epochs, test_accs, label = "train");
     
+def print_training_config():
+    print("Not yet implemented")
+    
+def plot_some_samples(x, y = [], yhat = [], select_from = [], 
+                      ncols = 6, nrows = 4, xdim = 28, ydim = 28,
+                      label_mapping = range(100)):
+    """
+    Plot some input vectors as grayscale images (optionally together with their assigned or predicted labels).
+    x is an NxD - dimensional array, where D is the length of an input vector and N is the number of samples.
+    Out of the N samples, ncols x nrows indices are randomly selected from the list select_from (if it is empty, select_from becomes range(N)).
+    """
+    fig, ax = plt.subplots(nrows, ncols)
+    if len(select_from) == 0:
+        select_from = range(x.shape[0])
+    indices = choice(select_from, size = min(ncols * nrows, len(select_from)), replace = False)
+    for i, ind in enumerate(indices):
+        thisax = ax[i//ncols,i%ncols]
+        thisax.matshow(x[ind].reshape(xdim, ydim), cmap='gray')
+        thisax.set_axis_off()
+        if len(y) != 0:
+            j = y[ind] if type(y[ind]) != np.ndarray else y[ind].argmax()
+            thisax.text(0, 0, label_mapping[j], color='green', 
+                                                       verticalalignment='top',
+                                                       transform=thisax.transAxes)
+        if len(yhat) != 0:
+            k = yhat[ind] if type(yhat[ind]) != np.ndarray else yhat[ind].argmax()
+            thisax.text(1, 0, label_mapping[k], color='red',
+                                             verticalalignment='top',
+                                             horizontalalignment='right',
+                                             transform=thisax.transAxes)
+    return fig
   

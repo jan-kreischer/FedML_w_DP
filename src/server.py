@@ -117,6 +117,8 @@ class Server:
                 pred_labels = torch.argmax(outputs, dim=1)
             elif self.data == 'Med':
                 pred_labels = torch.round(outputs)
+            elif self.data == 'FEMNIST':
+                pred_labels = torch.argmax(outputs, dim=1)
             else:
                 raise NotImplementedError
             nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()

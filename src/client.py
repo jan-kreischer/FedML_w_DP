@@ -72,6 +72,12 @@ class Client:
                 # Setting gradients to zero before starting backpropagation
                 self.optimizer.zero_grad()
                 output = self.model(images)
+                #print(output)
+                #print(labels)
+                #print(type(output))
+                #print(type(labels))
+                #print(output.size())
+                #print(labels.size())
                 loss = self.criterion(output, labels)
                 loss.backward()
 
