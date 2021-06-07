@@ -3,6 +3,7 @@ import urllib.request
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
+
 # most of the code comes from https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
 
 def download_url(url, save_as):
@@ -13,23 +14,29 @@ def download_url(url, save_as):
     file.close()
     response.close()
 
+
 def read_binary_file(file):
     f = open(file, 'rb')
     block = f.read()
     return block.decode('utf-16')
 
+
 def split_text_in_lines(text):
     return text.split('\r\n')
 
+
 def split_by_tabs(line):
     return line.split('\t')
+
 
 def parse_double(field):
     field = field.replace(',', '.')
     return float(field)
 
+
 def parse_boolean(field):
     return 1. if field == 'yes' else 0.
+
 
 def read_np_array(file):
     text = read_binary_file(file)
@@ -49,6 +56,7 @@ def read_np_array(file):
     matrix = np.array(rows, dtype=np.float32)
     return matrix
 
+
 def get_random_indexes(n):
     indexes = list(range(n))
     random_indexes = []
@@ -57,15 +65,18 @@ def get_random_indexes(n):
         random_indexes.append(indexes.pop(r))
     return random_indexes
 
-def get_indexes_for_2_datasets(n, training = 80):
+
+def get_indexes_for_2_datasets(n, training=80):
     indexes = get_random_indexes(n)
     train = int(training / 100. * n)
     return indexes[:train], indexes[train:]
 
+
 def print_dataset(name, data):
     print('Dataset {}. Shape: {}'.format(name, data.shape))
     print(data)
-    
+
+
 def plot_metrics(test_losses, test_accs):
     assert len(test_losses) == len(test_accs)
     epochs = range(len(test_losses))
@@ -75,25 +86,27 @@ def plot_metrics(test_losses, test_accs):
     fig.set_figheight(6)
     fig.set_figwidth(12)
 
-    #ax1.set_xscale('log')
+    # ax1.set_xscale('log')
     ax1.set_ylabel("Validation loss")
     ax1.set_xlabel("Epoch")
-    ax1.plot(epochs, test_losses, label = "train")
+    ax1.plot(epochs, test_losses, label="train")
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-    #ax1.plot(metrics["neurons"], metrics["min_val_loss"], label = "val")
+    # ax1.plot(metrics["neurons"], metrics["min_val_loss"], label = "val")
 
-    #ax2.set_xscale('log')
+    # ax2.set_xscale('log')
     ax2.set_ylabel("Validation accuracy")
     ax2.set_xlabel("Epoch")
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax2.plot(epochs, test_accs, label = "train");
-    
+    ax2.plot(epochs, test_accs, label="train");
+
+
 def print_training_config():
     print("Not yet implemented")
-    
-def plot_some_samples(x, y = [], yhat = [], select_from = [], 
-                      ncols = 6, nrows = 4, xdim = 28, ydim = 28,
-                      label_mapping = range(100)):
+
+
+def plot_some_samples(x, y=[], yhat=[], select_from=[],
+                      ncols=6, nrows=4, xdim=28, ydim=28,
+                      label_mapping=range(100)):
     """
     Plot some input vectors as grayscale images (optionally together with their assigned or predicted labels).
     x is an NxD - dimensional array, where D is the length of an input vector and N is the number of samples.
@@ -102,21 +115,20 @@ def plot_some_samples(x, y = [], yhat = [], select_from = [],
     fig, ax = plt.subplots(nrows, ncols)
     if len(select_from) == 0:
         select_from = range(x.shape[0])
-    indices = choice(select_from, size = min(ncols * nrows, len(select_from)), replace = False)
+    indices = choice(select_from, size=min(ncols * nrows, len(select_from)), replace=False)
     for i, ind in enumerate(indices):
-        thisax = ax[i//ncols,i%ncols]
+        thisax = ax[i // ncols, i % ncols]
         thisax.matshow(x[ind].reshape(xdim, ydim), cmap='gray')
         thisax.set_axis_off()
         if len(y) != 0:
             j = y[ind] if type(y[ind]) != np.ndarray else y[ind].argmax()
-            thisax.text(0, 0, label_mapping[j], color='green', 
-                                                       verticalalignment='top',
-                                                       transform=thisax.transAxes)
+            thisax.text(0, 0, label_mapping[j], color='green',
+                        verticalalignment='top',
+                        transform=thisax.transAxes)
         if len(yhat) != 0:
             k = yhat[ind] if type(yhat[ind]) != np.ndarray else yhat[ind].argmax()
             thisax.text(1, 0, label_mapping[k], color='red',
-                                             verticalalignment='top',
-                                             horizontalalignment='right',
-                                             transform=thisax.transAxes)
+                        verticalalignment='top',
+                        horizontalalignment='right',
+                        transform=thisax.transAxes)
     return fig
-  
