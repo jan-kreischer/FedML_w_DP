@@ -100,10 +100,6 @@ def plot_metrics(test_losses, test_accs):
     ax2.plot(epochs, test_accs, label="train");
 
 
-def print_training_config():
-    print("Not yet implemented")
-
-
 def plot_some_samples(x, y=[], yhat=[], select_from=[],
                       ncols=6, nrows=4, xdim=28, ydim=28,
                       label_mapping=range(100)):

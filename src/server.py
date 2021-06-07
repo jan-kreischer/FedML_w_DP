@@ -2,13 +2,12 @@ import torch
 from torch import nn
 import copy
 from client import Client
-import numpy as np
 from typing import List, Dict
 from data import FedMNIST, FEMNIST, FedMed
 from opacus.dp_model_inspector import DPModelInspector
 import threading
 import numpy as np
-#from constants import DATA, NR_TRAINING_ROUNDS
+# from constants import DATA, NR_TRAINING_ROUNDS
 from pytorchtools import EarlyStopping
 from model import CNN, LogisticRegression
 
@@ -22,7 +21,23 @@ class Server:
     @return:
     """
 
-    def __init__(self, 
+    '''
+    def print_config_summary(self, nr_clients, nr_training_rounds, lr, epochs, data, batch_size, max_grad_norm, epsilon, n_accumulation_steps, epsilon_training_iteration, is_parallel, is_private):
+    parallel_message = ''
+    if is_parallel:
+        parallel_message = 'in paralell'
+    else 
+        parallel_message = 'sequantially'
+    print("Training {nr_clients} clients \n for {nr_training_round} training rounds \n on {data} dataset \n for {epochs} epochs with {batch_size} batch size and lr {lr} {parallel_message}".format(nr_clients=nr_clients, nr_training_rounds=nr_training_rounds, data=data, 
+    epochs=epochs,batch_size=batch_size, lr=lr, parallel_message=parallel_message))
+    '''
+
+    def config_summary(self, config):
+        print("--- Configuration ---")
+        for key, value in config.items():
+            print("{0}: {1}".format(key, value))
+
+    def __init__(self,
                  nr_clients: int,
                  nr_training_rounds: int,
                  lr: float,
@@ -36,25 +51,43 @@ class Server:
                  is_private=False,
                  is_parallel=False,
                  verbose="all"):
+
+        self.config_summary({
+            'nr_clients': nr_clients,
+            'nr_training_rounds': nr_training_rounds,
+            'lr': lr,
+            'epochs': epochs,
+            'data': data,
+            'batch_size': batch_size,
+            'max_grad_norm': max_grad_norm,
+            'epsilon': epsilon,
+            'n_accumulation_steps': n_accumulation_steps,
+            'epsilon_training_iteration': epsilon_training_iteration,
+            'is_parallel': is_parallel,
+            'is_private': is_private,
+            'verbose': verbose
+        })
+
         self.nr_clients = nr_clients
         self.lr = lr
         self.nr_training_rounds = nr_training_rounds
         self.data = data
-        
+
         if self.data == 'MNIST':
             print(self.nr_clients)
             data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
             model = CNN()
         if self.data == 'FEMNIST':
-            print(self.nr_clients)
             data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
-            model = CNN()
+            model = CNN().double()
         elif self.data == 'Med':
             data_obj = FedMed(nr_clients, batch_size=batch_size)
             loss = torch.nn.BCELoss(size_average=True)
             model = LogisticRegression()
+        else:
+            raise NotImplementedError(f'{self.data} is not implemented!')
 
         self.clients: Dict[int, Client] = {}
         inspector = DPModelInspector()
@@ -111,7 +144,14 @@ class Server:
         nr_correct = 0
         len_test_data = 0
         for attributes, labels in self.test_data:
-            outputs = self.global_model(attributes)
+            features = attributes.double()
+            # print(type(features))
+            # print(features.dtype)
+            # print(type(attributes))
+            # print(attributes.dtype)
+            # print(features[0])
+            # print(attributes[0])
+            outputs = self.global_model(features)
             # accuracy
             if self.data == 'MNIST':
                 pred_labels = torch.argmax(outputs, dim=1)
@@ -129,7 +169,6 @@ class Server:
         return nr_correct / len_test_data, test_loss.item()
 
     def global_update(self):
-        print("called global update")
         # Permutation of the clients
         client_ids = np.random.choice(range(self.nr_clients), self.nr_clients, replace=False)
 
@@ -146,7 +185,7 @@ class Server:
             for client_id in client_ids:
                 self.clients[client_id].train()
 
-        # 
+        #
         aggregated_weights = self.aggregate(list(self.clients.keys()))
         self.broadcast_weights(aggregated_weights)
         test_acc, test_loss = self.compute_acc()
@@ -154,7 +193,8 @@ class Server:
         return test_loss, test_acc
 
     def __call__(self, early=False, patience=3, delta=0.05):
-        self.verbose="all"
+        print("--- Training ---")
+        self.verbose = "all"
         if early:
             early_stopping = EarlyStopping(patience=patience, delta=delta, verbose=self.verbose)
 
@@ -174,7 +214,7 @@ class Server:
 
         # load last model if early
         if early: self.global_model.load_state_dict(torch.load('checkpoint.pt'))
-        
+
         print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
         print(f"Test accuracies: {test_accs}")
         print("Finished")
