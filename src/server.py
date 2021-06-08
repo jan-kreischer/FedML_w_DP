@@ -50,7 +50,7 @@ class Server:
                  epsilon_training_iteration: float,
                  is_private=False,
                  is_parallel=False,
-                 device=torch.device
+                 device=torch.device,
                  verbose="all"):
 
         self.config_summary({
@@ -66,7 +66,7 @@ class Server:
             'epsilon_training_iteration': epsilon_training_iteration,
             'is_parallel': is_parallel,
             'is_private': is_private,
-            'device': device
+            'device': torch.device,
             'verbose': verbose
         })
 
@@ -81,11 +81,10 @@ class Server:
             loss = nn.NLLLoss()
             model = CNN()
         if self.data == 'FEMNIST':
-            data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
+            data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
             model = CNN().double()
-            model.to(torch.device("cuda:0"))
-            print("Using cuda:0")
+            model.to(device)
         elif self.data == 'Med':
             data_obj = FedMed(nr_clients, batch_size=batch_size)
             loss = torch.nn.BCELoss(size_average=True)

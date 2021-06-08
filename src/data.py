@@ -1,3 +1,4 @@
+import torch
 import torch.utils.data
 from torch.utils.data import DataLoader, random_split, TensorDataset
 from torchvision import datasets, transforms
@@ -77,7 +78,7 @@ class FEMNIST:
     def makeArray(self, string):
         return np.fromstring(string[1:-1], sep=', ', dtype=np.double)
 
-    def __init__(self, nr_clients: int, batch_size: int):
+    def __init__(self, nr_clients: int, batch_size: int, device: torch.device):
         self.batch_size = batch_size
         # --- Load Test Data ---
         print("--- Load Data ---")
@@ -89,8 +90,8 @@ class FEMNIST:
         Xs = np.vstack(data['X'])
         ys = data['y'].to_numpy()
 
-        self.data_test = TensorDataset(torch.reshape(torch.DoubleTensor(Xs), (-1, 1, 28, 28)),
-                                       torch.LongTensor(torch.from_numpy(ys)))
+        self.data_test = TensorDataset(torch.reshape(torch.DoubleTensor(Xs, device=device), (-1, 1, 28, 28)),
+                                       torch.LongTensor(ys, device=device))
         print("Loaded Test Data")
 
         # --- Load Training Data ---
@@ -108,8 +109,8 @@ class FEMNIST:
         client_id = 0
         for X_chunk, y_chunk in self.chunks(Xs, ys, nr_clients):
             self.len_client_data[client_id] = len(X_chunk)
-            client_dataset = TensorDataset(torch.reshape(torch.DoubleTensor(X_chunk), (-1, 1, 28, 28)),
-                                           torch.LongTensor(y_chunk))
+            client_dataset = TensorDataset(torch.reshape(torch.DoubleTensor(X_chunk, device=device), (-1, 1, 28, 28)),
+                                           torch.LongTensor(y_chunk, device=device))
             client_subset = torch.utils.data.Subset(client_dataset, indices=np.arange(len(client_dataset)))
             self.data_train_split[client_id] = client_subset
             client_id += 1
