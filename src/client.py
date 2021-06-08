@@ -1,3 +1,4 @@
+import torch
 from torch import nn, optim
 import copy
 from torch.utils.data import DataLoader
@@ -72,12 +73,6 @@ class Client:
                 # Setting gradients to zero before starting backpropagation
                 self.optimizer.zero_grad()
                 output = self.model(images)
-                #print(output)
-                #print(labels)
-                #print(type(output))
-                #print(type(labels))
-                #print(output.size())
-                #print(labels.size())
                 loss = self.criterion(output, labels)
                 loss.backward()
 
@@ -104,3 +99,7 @@ class Client:
 
         if self.verbose:
             print(f"Client {self.id} - done")
+        print("Analyzing Memory Usage")
+        print(torch.cuda.memory_summary(device=torch.device("cuda:0"), abbreviated=True))
+        torch.cuda.empty_cache()
+        print(torch.cuda.memory_summary(device=torch.device("cuda:0"), abbreviated=True))

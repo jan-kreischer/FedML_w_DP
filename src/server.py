@@ -69,7 +69,7 @@ class Server:
             'device': torch.device,
             'verbose': verbose
         })
-
+        self.device = device
         self.nr_clients = nr_clients
         self.lr = lr
         self.nr_training_rounds = nr_training_rounds
@@ -84,7 +84,7 @@ class Server:
             data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
             model = CNN().double()
-            model.to(device)
+            model = model.to(device)
         elif self.data == 'Med':
             data_obj = FedMed(nr_clients, batch_size=batch_size)
             loss = torch.nn.BCELoss(size_average=True)
@@ -126,7 +126,7 @@ class Server:
         client_params = {client_id: self.clients[client_id].model.state_dict() for client_id in client_ids}
         new_params = copy.deepcopy(client_params[0])  # names
         for name in new_params:
-            new_params[name] = torch.zeros(new_params[name].shape)
+            new_params[name] = torch.zeros(new_params[name].shape, device=self.device)
         for client_id, params in client_params.items():
             client_weight = self.clients_len_data[client_id] / self.len_train_data
             for name in new_params:

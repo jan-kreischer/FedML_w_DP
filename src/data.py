@@ -90,8 +90,8 @@ class FEMNIST:
         Xs = np.vstack(data['X'])
         ys = data['y'].to_numpy()
 
-        self.data_test = TensorDataset(torch.reshape(torch.DoubleTensor(Xs, device=device), (-1, 1, 28, 28)),
-                                       torch.LongTensor(ys, device=device))
+        self.data_test = TensorDataset(torch.reshape(torch.tensor(Xs, device=device, dtype=torch.float64), (-1, 1, 28, 28)),
+                                       torch.tensor(ys, device=device, dtype=torch.int64))
         print("Loaded Test Data")
 
         # --- Load Training Data ---
@@ -109,8 +109,8 @@ class FEMNIST:
         client_id = 0
         for X_chunk, y_chunk in self.chunks(Xs, ys, nr_clients):
             self.len_client_data[client_id] = len(X_chunk)
-            client_dataset = TensorDataset(torch.reshape(torch.DoubleTensor(X_chunk, device=device), (-1, 1, 28, 28)),
-                                           torch.LongTensor(y_chunk, device=device))
+            client_dataset = TensorDataset(torch.reshape(torch.tensor(X_chunk, device=device, dtype=torch.float64), (-1, 1, 28, 28)),
+                                           torch.tensor(y_chunk, device=device, dtype=torch.int64))
             client_subset = torch.utils.data.Subset(client_dataset, indices=np.arange(len(client_dataset)))
             self.data_train_split[client_id] = client_subset
             client_id += 1
