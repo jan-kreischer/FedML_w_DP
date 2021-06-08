@@ -50,6 +50,7 @@ class Server:
                  epsilon_training_iteration: float,
                  is_private=False,
                  is_parallel=False,
+                 dev='cpu'
                  verbose="all"):
 
         self.config_summary({
@@ -65,6 +66,7 @@ class Server:
             'epsilon_training_iteration': epsilon_training_iteration,
             'is_parallel': is_parallel,
             'is_private': is_private,
+            'dev': dev
             'verbose': verbose
         })
 
@@ -82,6 +84,8 @@ class Server:
             data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
             model = CNN().double()
+            model.to(torch.device("cuda:0"))
+            print("Using cuda:0")
         elif self.data == 'Med':
             data_obj = FedMed(nr_clients, batch_size=batch_size)
             loss = torch.nn.BCELoss(size_average=True)
@@ -145,12 +149,6 @@ class Server:
         len_test_data = 0
         for attributes, labels in self.test_data:
             features = attributes.double()
-            # print(type(features))
-            # print(features.dtype)
-            # print(type(attributes))
-            # print(attributes.dtype)
-            # print(features[0])
-            # print(attributes[0])
             outputs = self.global_model(features)
             # accuracy
             if self.data == 'MNIST':
