@@ -99,7 +99,3 @@ class Client:
 
         if self.verbose:
             print(f"Client {self.id} - done")
-        print("Analyzing Memory Usage")
-        print(torch.cuda.memory_summary(device=torch.device("cuda:0"), abbreviated=True))
-        torch.cuda.empty_cache()
-        print(torch.cuda.memory_summary(device=torch.device("cuda:0"), abbreviated=True))

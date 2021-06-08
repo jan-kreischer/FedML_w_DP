@@ -85,12 +85,12 @@ class FEMNIST:
         data_path = './data/FEMNIST/test.csv'
         data = pd.read_csv(data_path, dtype=[('id', np.double), ('X', str), ('y', int)])
         # Convert string encoded X into numpy array
-        data['X'] = data['X'].apply(lambda string: np.fromstring(string[1:-1], sep=', ', dtype=np.double))
+        data['X'] = data['X'].apply(lambda string: np.fromstring(string[1:-1], sep=', ', dtype=np.float))
         # Stack all numpy arrays on top of each other
         Xs = np.vstack(data['X'])
         ys = data['y'].to_numpy()
 
-        self.data_test = TensorDataset(torch.reshape(torch.tensor(Xs, device=device, dtype=torch.float64), (-1, 1, 28, 28)),
+        self.data_test = TensorDataset(torch.reshape(torch.tensor(Xs, device=device, dtype=torch.float), (-1, 1, 28, 28)),
                                        torch.tensor(ys, device=device, dtype=torch.int64))
         print("Loaded Test Data")
 
@@ -101,7 +101,7 @@ class FEMNIST:
 
         data = pd.read_csv(data_path, dtype=[('id', np.double), ('X', str), ('y', int)])
         # Convert string encoded X into numpy array
-        data['X'] = data['X'].apply(lambda string: np.fromstring(string[1:-1], sep=', ', dtype=np.double))
+        data['X'] = data['X'].apply(lambda string: np.fromstring(string[1:-1], sep=', ', dtype=np.float))
         # Stack all numpy arrays on top of each other
         Xs = np.vstack(data['X'])
         ys = data['y'].to_numpy()
@@ -109,7 +109,7 @@ class FEMNIST:
         client_id = 0
         for X_chunk, y_chunk in self.chunks(Xs, ys, nr_clients):
             self.len_client_data[client_id] = len(X_chunk)
-            client_dataset = TensorDataset(torch.reshape(torch.tensor(X_chunk, device=device, dtype=torch.float64), (-1, 1, 28, 28)),
+            client_dataset = TensorDataset(torch.reshape(torch.tensor(X_chunk, device=device, dtype=torch.float), (-1, 1, 28, 28)),
                                            torch.tensor(y_chunk, device=device, dtype=torch.int64))
             client_subset = torch.utils.data.Subset(client_dataset, indices=np.arange(len(client_dataset)))
             self.data_train_split[client_id] = client_subset

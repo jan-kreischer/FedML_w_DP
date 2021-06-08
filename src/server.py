@@ -13,25 +13,7 @@ from model import CNN, LogisticRegression
 
 
 class Server:
-    """
-    @param self:
-    @param nr_clients: The number of clients participating in the collaborative model creation
-    @param lr:
-    @param epochs: 
-    @return:
-    """
-
-    '''
-    def print_config_summary(self, nr_clients, nr_training_rounds, lr, epochs, data, batch_size, max_grad_norm, epsilon, n_accumulation_steps, epsilon_training_iteration, is_parallel, is_private):
-    parallel_message = ''
-    if is_parallel:
-        parallel_message = 'in paralell'
-    else 
-        parallel_message = 'sequantially'
-    print("Training {nr_clients} clients \n for {nr_training_round} training rounds \n on {data} dataset \n for {epochs} epochs with {batch_size} batch size and lr {lr} {parallel_message}".format(nr_clients=nr_clients, nr_training_rounds=nr_training_rounds, data=data, 
-    epochs=epochs,batch_size=batch_size, lr=lr, parallel_message=parallel_message))
-    '''
-
+  
     def config_summary(self, config):
         print("--- Configuration ---")
         for key, value in config.items():
@@ -83,7 +65,7 @@ class Server:
         if self.data == 'FEMNIST':
             data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
-            model = CNN().double()
+            model = CNN().to(torch.float)
             model = model.to(device)
         elif self.data == 'Med':
             data_obj = FedMed(nr_clients, batch_size=batch_size)
@@ -147,7 +129,7 @@ class Server:
         nr_correct = 0
         len_test_data = 0
         for attributes, labels in self.test_data:
-            features = attributes.double()
+            features = attributes.float()
             outputs = self.global_model(features)
             # accuracy
             if self.data == 'MNIST':
