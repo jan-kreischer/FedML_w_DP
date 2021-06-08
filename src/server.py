@@ -50,7 +50,7 @@ class Server:
                  epsilon_training_iteration: float,
                  is_private=False,
                  is_parallel=False,
-                 dev='cpu'
+                 device=torch.device
                  verbose="all"):
 
         self.config_summary({
@@ -66,7 +66,7 @@ class Server:
             'epsilon_training_iteration': epsilon_training_iteration,
             'is_parallel': is_parallel,
             'is_private': is_private,
-            'dev': dev
+            'device': device
             'verbose': verbose
         })
 
