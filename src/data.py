@@ -81,7 +81,7 @@ class FEMNIST:
     def __init__(self, nr_clients: int, batch_size: int, device: torch.device):
         self.batch_size = batch_size
         # --- Load Test Data ---
-        print("--- Load Data ---")
+        print("--- Loading Data ---")
         data_path = './data/FEMNIST/test.csv'
         data = pd.read_csv(data_path, dtype=[('id', np.double), ('X', str), ('y', int)])
         # Convert string encoded X into numpy array
