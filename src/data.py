@@ -15,7 +15,7 @@ class FedMNIST:
     10 different classes (10 digits), images are 28x28
     """
 
-    def __init__(self, nr_clients: int, batch_size: int):
+    def __init__(self, nr_clients: int, batch_size: int, device: torch.device):
         self.batch_size = batch_size
 
         transform = transforms.Compose([
@@ -135,7 +135,7 @@ class FedMed:
     2 different classes, input has 6 attributes
     """
 
-    def __init__(self, nr_clients: int, batch_size: int, pred='inflammation'):
+    def __init__(self, nr_clients: int, batch_size: int, device: torch.device, pred='inflammation'):
         self.batch_size = batch_size
 
         names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
@@ -153,15 +153,15 @@ class FedMed:
         data_train_mat = matrix[train_indexes]
         data_test_mat = matrix[test_indexes]
 
-        data_train_x = torch.Tensor(data_train_mat[:, :6])
-        data_test_x = torch.Tensor(data_test_mat[:, :6])
+        data_train_x = torch.tensor(data_train_mat[:, :6], device=device)
+        data_test_x = torch.tensor(data_test_mat[:, :6], device=device)
 
         if pred == 'inflammation':
-            data_train_y = torch.Tensor(np.vstack(data_train_mat[:, 6]))
-            data_test_y = torch.Tensor(np.vstack(data_test_mat[:, 6]))
+            data_train_y = torch.tensor(np.vstack(data_train_mat[:, 6]), device=device)
+            data_test_y = torch.tensor(np.vstack(data_test_mat[:, 6]), device=device)
         elif pred == 'nephritis':
-            data_train_y = torch.Tensor(np.vstack(data_train_mat[:, 7]))
-            data_test_y = torch.Tensor(np.vstack(data_test_mat[:, 7]))
+            data_train_y = torch.tensor(np.vstack(data_train_mat[:, 7]), device=device)
+            data_test_y = torch.tensor(np.vstack(data_test_mat[:, 7]), device=device)
         else:
             raise ValueError(f"Feature {pred} does not exist!")
 

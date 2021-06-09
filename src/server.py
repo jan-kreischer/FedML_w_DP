@@ -60,18 +60,18 @@ class Server:
         print(data)
         print(data == 'MNIST')
         if self.data == 'MNIST':
-            data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
+            data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
-            model = CNN()
+            model = CNN().to(device)
         elif self.data == 'FEMNIST':
             data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
             model = CNN().to(torch.float)
             model = model.to(device)
-        elif self.data == 'Med':
-            data_obj = FedMed(nr_clients, batch_size=batch_size)
+        elif self.data == 'MED':
+            data_obj = FedMed(nr_clients, batch_size=batch_size, device=device)
             loss = torch.nn.BCELoss(size_average=True)
-            model = LogisticRegression()
+            model = LogisticRegression().to(device)
         else:
             raise NotImplementedError(f'{self.data} is not implemented!')
 
@@ -109,7 +109,7 @@ class Server:
         client_params = {client_id: self.clients[client_id].model.state_dict() for client_id in client_ids}
         new_params = copy.deepcopy(client_params[0])  # names
         for name in new_params:
-            new_params[name] = torch.zeros(new_params[name].shape).to(self.device)
+            new_params[name] = torch.zeros(new_params[name].shape, device=self.device)
         for client_id, params in client_params.items():
             client_weight = self.clients_len_data[client_id] / self.len_train_data
             for name in new_params:
@@ -135,7 +135,7 @@ class Server:
             # accuracy
             if self.data == 'MNIST':
                 pred_labels = torch.argmax(outputs, dim=1)
-            elif self.data == 'Med':
+            elif self.data == 'MED':
                 pred_labels = torch.round(outputs)
             elif self.data == 'FEMNIST':
                 pred_labels = torch.argmax(outputs, dim=1)

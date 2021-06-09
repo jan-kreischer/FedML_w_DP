@@ -130,7 +130,5 @@ dmypy.json
 .idea/
 #data/
 MNIST
-MED
-Med
 
 src/checkpoint.pt
