@@ -109,7 +109,7 @@ class Server:
         client_params = {client_id: self.clients[client_id].model.state_dict() for client_id in client_ids}
         new_params = copy.deepcopy(client_params[0])  # names
         for name in new_params:
-            new_params[name] = torch.zeros(new_params[name].shape, device=self.device)
+            new_params[name] = torch.zeros(new_params[name].shape)
         for client_id, params in client_params.items():
             client_weight = self.clients_len_data[client_id] / self.len_train_data
             for name in new_params:
