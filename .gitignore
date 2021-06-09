@@ -128,7 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .idea/
-#data/
+/src/data/
 MNIST
 
 src/checkpoint.pt
