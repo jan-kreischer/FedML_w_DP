@@ -132,8 +132,5 @@ dmypy.json
 MNIST
 MED
 Med
-src/data/MNIST
-src/data/MED
-src/data/Med
 
 src/checkpoint.pt

@@ -57,12 +57,13 @@ class Server:
         self.nr_training_rounds = nr_training_rounds
         self.data = data
 
+        print(data)
+        print(data == 'MNIST')
         if self.data == 'MNIST':
-            print(self.nr_clients)
             data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size)
             loss = nn.NLLLoss()
             model = CNN()
-        if self.data == 'FEMNIST':
+        elif self.data == 'FEMNIST':
             data_obj = FEMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
             model = CNN().to(torch.float)
