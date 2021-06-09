@@ -8,7 +8,7 @@ from opacus.dp_model_inspector import DPModelInspector
 import threading
 import numpy as np
 # from constants import DATA, NR_TRAINING_ROUNDS
-from pytorchtools import EarlyStopping
+from utils import EarlyStopping
 from model import CNN, LogisticRegression
 
 
