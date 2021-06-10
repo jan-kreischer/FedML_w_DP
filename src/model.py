@@ -3,7 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 
 
-# from Torch MNIST example
+# source : https://github.com/pytorch/examples/tree/master/mnist
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
@@ -29,8 +29,7 @@ class CNN(nn.Module):
         x = F.log_softmax(x, dim=1)
         return x
 
-# from https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
-# changed dimension of output
+# source : https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
 class LogisticRegression(torch.nn.Module):
 
     def __init__(self):

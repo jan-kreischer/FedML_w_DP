@@ -7,7 +7,6 @@ from data import FedMNIST, FEMNIST, FedMed
 from opacus.dp_model_inspector import DPModelInspector
 import threading
 import numpy as np
-# from constants import DATA, NR_TRAINING_ROUNDS
 from utils import EarlyStopping
 from model import CNN, LogisticRegression
 
@@ -58,7 +57,6 @@ class Server:
         self.data = data
 
         print(data)
-        print(data == 'MNIST')
         if self.data == 'MNIST':
             data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
@@ -133,12 +131,10 @@ class Server:
             features = attributes.float()
             outputs = self.global_model(features)
             # accuracy
-            if self.data == 'MNIST':
+            if self.data == 'MNIST' or self.data == 'FEMNIST':
                 pred_labels = torch.argmax(outputs, dim=1)
             elif self.data == 'MED':
                 pred_labels = torch.round(outputs)
-            elif self.data == 'FEMNIST':
-                pred_labels = torch.argmax(outputs, dim=1)
             else:
                 raise NotImplementedError
             nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
@@ -174,7 +170,6 @@ class Server:
 
     def __call__(self, early=False, patience=3, delta=0.05):
         print("--- Training ---")
-        self.verbose = "all"
         if early:
             early_stopping = EarlyStopping(patience=patience, delta=delta, verbose=self.verbose)
 

@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 
-# most of the code comes from https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
+# 1. Preprocessing utils
+# source : https://github.com/ivishalanand/Federated-Learning-on-Hospital-Data/blob/master/Hospital%20data%20Federated%20learning.ipynb
 
 def download_url(url, save_as):
     response = urllib.request.urlopen(url)
@@ -15,29 +16,23 @@ def download_url(url, save_as):
     file.close()
     response.close()
 
-
 def read_binary_file(file):
     f = open(file, 'rb')
     block = f.read()
     return block.decode('utf-16')
 
-
 def split_text_in_lines(text):
     return text.split('\r\n')
 
-
 def split_by_tabs(line):
     return line.split('\t')
-
 
 def parse_double(field):
     field = field.replace(',', '.')
     return float(field)
 
-
 def parse_boolean(field):
     return 1. if field == 'yes' else 0.
-
 
 def read_np_array(file):
     text = read_binary_file(file)
@@ -57,7 +52,6 @@ def read_np_array(file):
     matrix = np.array(rows, dtype=np.float32)
     return matrix
 
-
 def get_random_indexes(n):
     indexes = list(range(n))
     random_indexes = []
@@ -66,17 +60,16 @@ def get_random_indexes(n):
         random_indexes.append(indexes.pop(r))
     return random_indexes
 
-
 def get_indexes_for_2_datasets(n, training=80):
     indexes = get_random_indexes(n)
     train = int(training / 100. * n)
     return indexes[:train], indexes[train:]
 
-
 def print_dataset(name, data):
     print('Dataset {}. Shape: {}'.format(name, data.shape))
     print(data)
 
+# 2. Plot utils
 
 def plot_metrics(test_losses, test_accs):
     assert len(test_losses) == len(test_accs)
@@ -130,10 +123,9 @@ def plot_some_samples(x, y=[], yhat=[], select_from=[],
                         transform=thisax.transAxes)
     return fig
 
-
-
-
+# 3. Early stopping
 # source : https://github.com/Bjarten/early-stopping-pytorch
+
 class EarlyStopping:
     """
     Early stops the training if validation loss doesn't improve after a given patience.

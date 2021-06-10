@@ -3,7 +3,6 @@ from torch import nn, optim
 import copy
 from torch.utils.data import DataLoader
 from opacus import PrivacyEngine
-#from constants import *
 
 
 class Client:

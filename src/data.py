@@ -8,7 +8,6 @@ from utils import download_url, read_np_array, get_indexes_for_2_datasets
 import numpy as np
 import pandas as pd
 
-
 class FedMNIST:
     """
     MNIST dataset, with samples randomly equally distributed among clients
@@ -61,10 +60,6 @@ class FedMNIST:
                               sample_rate=self.batch_size / len(self.data_train_split[client_id]),
                           )), \
                len(self.data_train_split[client_id])
-
-
-# TODO : reformatting
-
 
 class FEMNIST:
     """
