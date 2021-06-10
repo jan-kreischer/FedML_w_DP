@@ -43,6 +43,12 @@ class FedMNIST:
         self.nr_clients = nr_clients
         len_train = len(data_train)
         self.len_client_data = {client_id: int(len_train / nr_clients) for client_id in range(nr_clients)}
+        if sum(self.len_client_data)!=len_train:
+            dif = len_train-sum(self.len_client_data.values())
+            idxs = np.random.choice(nr_clients,size=dif)
+            for idx in idxs:
+                self.len_client_data[idx]+=1
+
         rs = random_split(data_train, list(self.len_client_data.values()))
 
         self.data_train_split: Dict[int, torch.utils.data.Subset] = {client_id: rs[client_id] for client_id in
@@ -166,6 +172,11 @@ class FedMed:
         self.nr_clients = nr_clients
         len_train = len(data_train)
         self.len_client_data = {client_id: int(len_train / nr_clients) for client_id in range(nr_clients)}
+        if sum(self.len_client_data)!=len_train:
+            dif = len_train-sum(self.len_client_data.values())
+            idxs = np.random.choice(nr_clients,size=dif)
+            for idx in idxs:
+                self.len_client_data[idx]+=1
 
         rs = random_split(data_train, list(self.len_client_data.values()))
 

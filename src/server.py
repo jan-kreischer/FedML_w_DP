@@ -56,7 +56,6 @@ class Server:
         self.nr_training_rounds = nr_training_rounds
         self.data = data
 
-        print(data)
         if self.data == 'MNIST':
             data_obj = FedMNIST(nr_clients=self.nr_clients, batch_size=batch_size, device=device)
             loss = nn.NLLLoss()
@@ -161,7 +160,6 @@ class Server:
             for client_id in client_ids:
                 self.clients[client_id].train()
 
-        #
         aggregated_weights = self.aggregate(list(self.clients.keys()))
         self.broadcast_weights(aggregated_weights)
         test_acc, test_loss = self.compute_acc()

@@ -71,6 +71,19 @@ def print_dataset(name, data):
 
 # 2. Plot utils
 
+def plot_exp(experiment_losses,experiment_accs,names):
+    fig, (ax1, ax2) = plt.subplots(2, 1)
+    for loss, label in zip(experiment_losses, names):
+        ax1.plot(loss, label=label)
+    for acc, label in zip(experiment_accs, names):
+        ax2.plot(acc, label=label)
+    ax1.set_ylabel('Global test loss')
+    ax2.set_ylabel('Global test accuracy')
+    ax2.set_xlabel('Global training rounds')
+    ax1.legend(loc='upper right')
+    ax2.legend(loc='lower right')
+    plt.show()
+
 def plot_metrics(test_losses, test_accs):
     assert len(test_losses) == len(test_accs)
     epochs = range(len(test_losses))

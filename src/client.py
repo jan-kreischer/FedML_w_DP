@@ -20,8 +20,20 @@ class Client:
     @return:
     """
 
-    def __init__(self, model: nn.Module, data: DataLoader, len_data: int, lr: float, epochs: int, batch_size: int, n_accumulation_steps: int, epsilon_training_iteration: float, max_grad_norm: float, client_id: int,
-                 loss=nn.NLLLoss(), is_private=False, verbose="all"):
+    def __init__(self,
+                 model: nn.Module,
+                 data: DataLoader,
+                 len_data: int,
+                 lr: float,
+                 epochs: int,
+                 batch_size: int,
+                 n_accumulation_steps: int,
+                 epsilon_training_iteration: float,
+                 max_grad_norm: float,
+                 client_id: int,
+                 loss=nn.NLLLoss(),
+                 is_private=False,
+                 verbose="all"):
         self.lr = lr
         self.model = model
         self.train_loader = data
@@ -76,7 +88,6 @@ class Client:
                 loss.backward()
 
                 if self.is_private:
-                    # take a real optimizer step after N_VIRTUAL_STEP steps t
                     if ((i + 1) % self.n_accumulation_steps == 0) or ((i + 1) == self.len_data):
                         self.optimizer.step()
                     else:
