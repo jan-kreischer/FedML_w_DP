@@ -8,12 +8,12 @@ from utils import download_url, read_np_array, get_indexes_for_2_datasets
 import numpy as np
 import pandas as pd
 
+
 class FedMNIST:
     """
     MNIST dataset, with samples randomly equally distributed among clients
     10 different classes (10 digits), images are 28x28
     """
-
     def __init__(self, nr_clients: int, batch_size: int, device: torch.device):
         self.batch_size = batch_size
 
@@ -43,19 +43,19 @@ class FedMNIST:
         self.nr_clients = nr_clients
         len_train = len(data_train)
         self.len_client_data = {client_id: int(len_train / nr_clients) for client_id in range(nr_clients)}
-        if sum(self.len_client_data)!=len_train:
-            dif = len_train-sum(self.len_client_data.values())
-            idxs = np.random.choice(nr_clients,size=dif)
+        if sum(self.len_client_data) != len_train:
+            dif = len_train - sum(self.len_client_data.values())
+            idxs = np.random.choice(nr_clients, size=dif)
             for idx in idxs:
-                self.len_client_data[idx]+=1
+                self.len_client_data[idx] += 1
 
         rs = random_split(data_train, list(self.len_client_data.values()))
 
         self.data_train_split: Dict[int, torch.utils.data.Subset] = {client_id: rs[client_id] for client_id in
                                                                      range(nr_clients)}
 
-    def get_server_data(self, batch_size: int = 64):
-        test_data = DataLoader(self.data_test, batch_size=batch_size, shuffle=True)
+    def get_server_data(self):
+        test_data = DataLoader(self.data_test, batch_size=self.batch_size, shuffle=True)
 
         return test_data, self.len_client_data
 
@@ -67,18 +67,12 @@ class FedMNIST:
                           )), \
                len(self.data_train_split[client_id])
 
+
 class FEMNIST:
     """
     MNIST dataset, with samples randomly equally distributed among clients
     10 different classes (10 digits), images are 28x28
     """
-
-    def chunks(self, X, y, size):
-        return ((X[i::size], y[i::size]) for i in range(size))
-
-    def makeArray(self, string):
-        return np.fromstring(string[1:-1], sep=', ', dtype=np.double)
-
     def __init__(self, nr_clients: int, batch_size: int, device: torch.device):
         self.batch_size = batch_size
         # --- Load Test Data ---
@@ -91,8 +85,9 @@ class FEMNIST:
         Xs = np.vstack(data['X'])
         ys = data['y'].to_numpy()
 
-        self.data_test = TensorDataset(torch.reshape(torch.tensor(Xs, device=device, dtype=torch.float), (-1, 1, 28, 28)),
-                                       torch.tensor(ys, device=device, dtype=torch.int64))
+        self.data_test = TensorDataset(
+            torch.reshape(torch.tensor(Xs, device=device, dtype=torch.float), (-1, 1, 28, 28)),
+            torch.tensor(ys, device=device, dtype=torch.int64))
         print("Loaded Test Data")
 
         # --- Load Training Data ---
@@ -110,15 +105,16 @@ class FEMNIST:
         client_id = 0
         for X_chunk, y_chunk in self.chunks(Xs, ys, nr_clients):
             self.len_client_data[client_id] = len(X_chunk)
-            client_dataset = TensorDataset(torch.reshape(torch.tensor(X_chunk, device=device, dtype=torch.float), (-1, 1, 28, 28)),
-                                           torch.tensor(y_chunk, device=device, dtype=torch.int64))
+            client_dataset = TensorDataset(
+                torch.reshape(torch.tensor(X_chunk, device=device, dtype=torch.float), (-1, 1, 28, 28)),
+                torch.tensor(y_chunk, device=device, dtype=torch.int64))
             client_subset = torch.utils.data.Subset(client_dataset, indices=np.arange(len(client_dataset)))
             self.data_train_split[client_id] = client_subset
             client_id += 1
         print("Loaded Training Data")
 
-    def get_server_data(self, batch_size: int = 64):
-        test_data = DataLoader(self.data_test, batch_size=batch_size, shuffle=True)
+    def get_server_data(self):
+        test_data = DataLoader(self.data_test, batch_size=self.batch_size, shuffle=True)
         return test_data, self.len_client_data
 
     def get_client_data(self, client_id: int):
@@ -128,6 +124,14 @@ class FEMNIST:
                               sample_rate=self.batch_size / len(self.data_train_split[client_id]),
                           )), \
                len(self.data_train_split[client_id])
+
+    @staticmethod
+    def chunks(X, y, size):
+        return ((X[i::size], y[i::size]) for i in range(size))
+
+    @staticmethod
+    def makeArray(string):
+        return np.fromstring(string[1:-1], sep=', ', dtype=np.double)
 
 
 class FedMed:
@@ -172,11 +176,11 @@ class FedMed:
         self.nr_clients = nr_clients
         len_train = len(data_train)
         self.len_client_data = {client_id: int(len_train / nr_clients) for client_id in range(nr_clients)}
-        if sum(self.len_client_data)!=len_train:
-            dif = len_train-sum(self.len_client_data.values())
-            idxs = np.random.choice(nr_clients,size=dif)
+        if sum(self.len_client_data) != len_train:
+            dif = len_train - sum(self.len_client_data.values())
+            idxs = np.random.choice(nr_clients, size=dif)
             for idx in idxs:
-                self.len_client_data[idx]+=1
+                self.len_client_data[idx] += 1
 
         rs = random_split(data_train, list(self.len_client_data.values()))
 

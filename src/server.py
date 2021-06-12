@@ -12,12 +12,6 @@ from model import CNN, LogisticRegression
 
 
 class Server:
-  
-    def config_summary(self, config):
-        print("--- Configuration ---")
-        for key, value in config.items():
-            print("{0}: {1}".format(key, value))
-
     def __init__(self,
                  nr_clients: int,
                  nr_training_rounds: int,
@@ -28,7 +22,6 @@ class Server:
                  max_grad_norm: float,
                  epsilon: float,
                  n_accumulation_steps: int,
-                 epsilon_training_iteration: float,
                  is_private=False,
                  is_parallel=False,
                  device=torch.device,
@@ -44,7 +37,6 @@ class Server:
             'max_grad_norm': max_grad_norm,
             'epsilon': epsilon,
             'n_accumulation_steps': n_accumulation_steps,
-            'epsilon_training_iteration': epsilon_training_iteration,
             'is_parallel': is_parallel,
             'is_private': is_private,
             'device': torch.device,
@@ -86,7 +78,7 @@ class Server:
                 epochs=epochs,
                 batch_size=batch_size,
                 n_accumulation_steps=n_accumulation_steps,
-                epsilon_training_iteration=epsilon_training_iteration,
+                epsilon=epsilon / nr_training_rounds,
                 max_grad_norm=max_grad_norm,
                 client_id=i,
                 loss=loss,
@@ -175,7 +167,8 @@ class Server:
         test_accs = []
         for training_round in range(self.nr_training_rounds):
             test_loss, test_acc = self.global_update()
-            if self.verbose: print(f"Round {training_round + 1}, test_loss: {test_loss:.4f}, test_acc: {test_acc}")
+            if self.verbose:
+                print(f"Round {training_round + 1}, test_loss: {test_loss:.4f}, test_acc: {test_acc}")
             test_losses.append(test_loss)
             test_accs.append(test_acc)
 
@@ -186,9 +179,16 @@ class Server:
                     break
 
         # load last model if early
-        if early: self.global_model.load_state_dict(torch.load('checkpoint.pt'))
+        if early:
+            self.global_model.load_state_dict(torch.load('checkpoint.pt'))
 
         print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
         print(f"Test accuracies: {test_accs}")
         print("Finished")
         return test_losses, test_accs
+
+    @staticmethod
+    def config_summary(config):
+        print("--- Configuration ---")
+        for key, value in config.items():
+            print("{0}: {1}".format(key, value))

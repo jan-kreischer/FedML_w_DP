@@ -28,7 +28,7 @@ class Client:
                  epochs: int,
                  batch_size: int,
                  n_accumulation_steps: int,
-                 epsilon_training_iteration: float,
+                 epsilon: float,
                  max_grad_norm: float,
                  client_id: int,
                  loss=nn.NLLLoss(),
@@ -45,8 +45,8 @@ class Client:
         self.verbose = (verbose == "all" or verbose == "client")
         self.batch_size = batch_size
         self.n_accumulation_steps = n_accumulation_steps
-        self.epsilon_training_iteration=epsilon_training_iteration
-        self.max_grad_norm=max_grad_norm
+        self.epsilon = epsilon
+        self.max_grad_norm = max_grad_norm
 
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         if is_private:
@@ -54,11 +54,11 @@ class Client:
             sample_rate = self.batch_size / self.len_data
             privacy_engine = PrivacyEngine(
                 self.model,
-                sample_rate=sample_rate * self.n_accumulation_steps,
+                sample_rate=sample_rate,
                 epochs=self.epochs,
-                target_epsilon=self.epsilon_training_iteration,
+                target_epsilon=self.epsilon,
                 target_delta=self.delta,
-                max_grad_norm=max_grad_norm,
+                max_grad_norm=max_grad_norm
             )
             # Attach the privacy engine to the optimizer before running
             privacy_engine.attach(self.optimizer)
