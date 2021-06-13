@@ -3,7 +3,6 @@ import torch.utils.data
 from torch.utils.data import DataLoader, random_split, TensorDataset
 from torchvision import datasets, transforms
 from typing import Dict
-from opacus.utils.uniform_sampler import UniformWithReplacementSampler
 from utils import download_url, read_np_array, get_indexes_for_2_datasets
 import numpy as np
 import pandas as pd
@@ -14,6 +13,7 @@ class FedMNIST:
     MNIST dataset, with samples randomly equally distributed among clients
     10 different classes (10 digits), images are 28x28
     """
+
     def __init__(self, nr_clients: int, batch_size: int, device: torch.device):
         self.batch_size = batch_size
 
@@ -60,12 +60,8 @@ class FedMNIST:
         return test_data, self.len_client_data
 
     def get_client_data(self, client_id: int):
-        return DataLoader(self.data_train_split[client_id],
-                          batch_sampler=UniformWithReplacementSampler(
-                              num_samples=len(self.data_train_split[client_id]),
-                              sample_rate=self.batch_size / len(self.data_train_split[client_id]),
-                          )), \
-               len(self.data_train_split[client_id])
+        train_data = DataLoader(self.data_train_split[client_id], batch_size=self.batch_size, shuffle=True)
+        return train_data, len(self.data_train_split[client_id])
 
 
 class FEMNIST:
@@ -73,6 +69,7 @@ class FEMNIST:
     MNIST dataset, with samples randomly equally distributed among clients
     10 different classes (10 digits), images are 28x28
     """
+
     def __init__(self, nr_clients: int, batch_size: int, device: torch.device):
         self.batch_size = batch_size
         # --- Load Test Data ---
@@ -118,12 +115,8 @@ class FEMNIST:
         return test_data, self.len_client_data
 
     def get_client_data(self, client_id: int):
-        return DataLoader(self.data_train_split[client_id],
-                          batch_sampler=UniformWithReplacementSampler(
-                              num_samples=len(self.data_train_split[client_id]),
-                              sample_rate=self.batch_size / len(self.data_train_split[client_id]),
-                          )), \
-               len(self.data_train_split[client_id])
+        train_data = DataLoader(self.data_train_split[client_id], batch_size=self.batch_size, shuffle=True)
+        return train_data, len(self.data_train_split[client_id])
 
     @staticmethod
     def chunks(X, y, size):

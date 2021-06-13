@@ -15,14 +15,14 @@ class Server:
     def __init__(self,
                  nr_clients: int,
                  nr_training_rounds: int,
-                 lr: float,
-                 epochs: int,
                  data: str,
+                 epochs: int,
+                 lr: float,
                  batch_size: int,
-                 max_grad_norm: float,
+                 is_private: bool,
                  epsilon: float,
-                 n_accumulation_steps: int,
-                 is_private=False,
+                 max_grad_norm: float,
+                 noise_multiplier: float,
                  is_parallel=False,
                  device=torch.device,
                  verbose="all"):
@@ -30,21 +30,20 @@ class Server:
         self.config_summary({
             'nr_clients': nr_clients,
             'nr_training_rounds': nr_training_rounds,
-            'lr': lr,
-            'epochs': epochs,
             'data': data,
+            'epochs': epochs,
+            'lr': lr,
             'batch_size': batch_size,
-            'max_grad_norm': max_grad_norm,
-            'epsilon': epsilon,
-            'n_accumulation_steps': n_accumulation_steps,
-            'is_parallel': is_parallel,
             'is_private': is_private,
+            'epsilon': epsilon,
+            'max_grad_norm': max_grad_norm,
+            'noise_multiplier': noise_multiplier,
+            'is_parallel': is_parallel,
             'device': torch.device,
             'verbose': verbose
         })
         self.device = device
         self.nr_clients = nr_clients
-        self.lr = lr
         self.nr_training_rounds = nr_training_rounds
         self.data = data
 
@@ -70,19 +69,23 @@ class Server:
 
         for i in range(self.nr_clients):
             data, len_data = data_obj.get_client_data(client_id=i)
+            if epsilon:
+                epsilon_round = epsilon / nr_training_rounds
+            else:
+                epsilon_round = None
             self.clients[i] = Client(
                 model=copy.deepcopy(model),
                 data=data,
                 len_data=len_data,
-                lr=lr,
                 epochs=epochs,
+                lr=lr,
                 batch_size=batch_size,
-                n_accumulation_steps=n_accumulation_steps,
-                epsilon=epsilon / nr_training_rounds,
+                is_private=is_private,
+                epsilon=epsilon_round,
                 max_grad_norm=max_grad_norm,
+                noise_multiplier=noise_multiplier,
                 client_id=i,
                 loss=loss,
-                is_private=is_private,
                 verbose=verbose,
             )
 
@@ -104,8 +107,8 @@ class Server:
             for name in new_params:
                 new_params[name] += params[name] * client_weight  # averaging
         # set new parameters to global model
-        self.global_model.load_state_dict(copy.deepcopy(new_params))
-        return self.global_model.state_dict().copy()
+        self.global_model.load_state_dict(new_params)
+        return self.global_model.state_dict()
 
     def broadcast_weights(self, new_params):
         """ Send to all clients """
@@ -158,7 +161,7 @@ class Server:
 
         return test_loss, test_acc
 
-    def __call__(self, early=False, patience=3, delta=0.05):
+    def train(self, early=False, patience=3, delta=0.05):
         print("--- Training ---")
         if early:
             early_stopping = EarlyStopping(patience=patience, delta=delta, verbose=self.verbose)
@@ -168,7 +171,7 @@ class Server:
         for training_round in range(self.nr_training_rounds):
             test_loss, test_acc = self.global_update()
             if self.verbose:
-                print(f"Round {training_round + 1}, test_loss: {test_loss:.4f}, test_acc: {test_acc}")
+                print(f"Round {training_round + 1}, test_loss: {test_loss:.3f}, test_acc: {test_acc:.3f}")
             test_losses.append(test_loss)
             test_accs.append(test_acc)
 
@@ -180,7 +183,7 @@ class Server:
 
         # load last model if early
         if early:
-            self.global_model.load_state_dict(torch.load('checkpoint.pt'))
+            self.global_model.load_state_dict(torch.load('../data/checkpoint.pt'))
 
         print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
         print(f"Test accuracies: {test_accs}")
