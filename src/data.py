@@ -22,20 +22,20 @@ class FedMNIST:
             transforms.Normalize((0.1307,), (0.3081,))
         ])
         try:
-            data_train = datasets.MNIST(root="./data",
+            data_train = datasets.MNIST(root="../data",
                                         train=True,
                                         download=False,
                                         transform=transform)
-            self.data_test = datasets.MNIST(root="./data",
+            self.data_test = datasets.MNIST(root="../data",
                                             train=False,
                                             download=False,
                                             transform=transform)
         except RuntimeError:
-            data_train = datasets.MNIST(root="./data",
+            data_train = datasets.MNIST(root="../data",
                                         train=True,
                                         download=True,
                                         transform=transform)
-            self.data_test = datasets.MNIST(root="./data",
+            self.data_test = datasets.MNIST(root="../data",
                                             train=False,
                                             download=True,
                                             transform=transform)
@@ -77,7 +77,7 @@ class FEMNIST:
         self.batch_size = batch_size
         # --- Load Test Data ---
         print("--- Loading Data ---")
-        data_path = './data/FEMNIST/test.csv'
+        data_path = '../data/FEMNIST/test.csv'
         data = pd.read_csv(data_path, dtype=[('id', np.double), ('X', str), ('y', int)])
         # Convert string encoded X into numpy array
         data['X'] = data['X'].apply(lambda string: np.fromstring(string[1:-1], sep=', ', dtype=np.float))
@@ -93,7 +93,7 @@ class FEMNIST:
         # --- Load Training Data ---
         self.data_train_split = {}
         self.len_client_data = {}
-        data_path = './data/FEMNIST/train.csv'
+        data_path = '../data/FEMNIST/train.csv'
 
         data = pd.read_csv(data_path, dtype=[('id', np.double), ('X', str), ('y', int)])
         # Convert string encoded X into numpy array
@@ -145,8 +145,8 @@ class FedMed:
 
         names_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.names'
         data_link = 'https://archive.ics.uci.edu/ml/machine-learning-databases/acute/diagnosis.data'
-        diagnosis_names = './data/MED/diagnosis.names'
-        diagnosis_data = './data/MED/diagnosis.data'
+        diagnosis_names = '../data/MED/diagnosis.names'
+        diagnosis_data = '../data/MED/diagnosis.data'
         download_url(names_link, diagnosis_names)
         download_url(data_link, diagnosis_data)
 
