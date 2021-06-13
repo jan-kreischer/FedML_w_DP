@@ -43,7 +43,7 @@ class FedMNIST:
         self.nr_clients = nr_clients
         len_train = len(data_train)
         self.len_client_data = {client_id: int(len_train / nr_clients) for client_id in range(nr_clients)}
-        if sum(self.len_client_data) != len_train:
+        if sum(self.len_client_data.values()) != len_train:
             dif = len_train - sum(self.len_client_data.values())
             idxs = np.random.choice(nr_clients, size=dif)
             for idx in idxs:
@@ -176,7 +176,7 @@ class FedMed:
         self.nr_clients = nr_clients
         len_train = len(data_train)
         self.len_client_data = {client_id: int(len_train / nr_clients) for client_id in range(nr_clients)}
-        if sum(self.len_client_data) != len_train:
+        if sum(self.len_client_data.values()) != len_train:
             dif = len_train - sum(self.len_client_data.values())
             idxs = np.random.choice(nr_clients, size=dif)
             for idx in idxs:
@@ -192,10 +192,5 @@ class FedMed:
         return test_data, self.len_client_data
 
     def get_client_data(self, client_id: int):
-        return DataLoader(
-            self.data_train_split[client_id],
-            batch_sampler=UniformWithReplacementSampler(
-                num_samples=len(self.data_train_split[client_id]),
-                sample_rate=self.batch_size / len(self.data_train_split[client_id])
-            )
-        ), len(self.data_train_split[client_id])
+        train_data = DataLoader(self.data_train_split[client_id], batch_size=self.batch_size, shuffle=True)
+        return train_data, self.len_client_data[client_id]

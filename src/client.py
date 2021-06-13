@@ -3,6 +3,7 @@ from torch import nn, optim
 import copy
 from torch.utils.data import DataLoader
 from opacus import PrivacyEngine
+import time
 
 
 class Client:
@@ -80,6 +81,7 @@ class Client:
 
         # Train the model for n epochs before aggregating
         for e in range(self.epochs):
+
             for i, (images, labels) in enumerate(self.train_loader):
                 # Setting gradients to zero before starting backpropagation
                 self.optimizer.zero_grad()
