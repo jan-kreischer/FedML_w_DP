@@ -21,11 +21,7 @@ class Server:
                  is_private: bool,
                  epsilon: float,
                  max_grad_norm: float,
-<<<<<<< HEAD
                  noise_multiplier: float,
-=======
-                 noise_multiplier: float = None,
->>>>>>> 88af6960ace8831b1c947c954b1cd3aed4fa53bb
                  is_parallel=False,
                  device=torch.device,
                  verbose="all"):
@@ -88,10 +84,7 @@ class Server:
                 epsilon=epsilon_round,
                 max_grad_norm=max_grad_norm,
                 noise_multiplier=noise_multiplier,
-<<<<<<< HEAD
                 client_id=i,
-=======
->>>>>>> 88af6960ace8831b1c947c954b1cd3aed4fa53bb
                 loss=loss,
                 verbose=verbose,
             )
@@ -168,11 +161,7 @@ class Server:
 
         return test_loss, test_acc
 
-<<<<<<< HEAD
     def train(self):
-=======
-    def train(self, early=False, patience=3, delta=0.05):
->>>>>>> 88af6960ace8831b1c947c954b1cd3aed4fa53bb
         print("--- Training ---")
 
         test_losses = []
@@ -184,19 +173,6 @@ class Server:
             test_losses.append(test_loss)
             test_accs.append(test_acc)
 
-<<<<<<< HEAD
-=======
-            if early:
-                early_stopping(test_loss, self.global_model)
-                if early_stopping.early_stop:
-                    print("Early stopping")
-                    break
-
-        # load last model if early
-        if early:
-            self.global_model.load_state_dict(torch.load('../data/checkpoint.pt'))
-
->>>>>>> 88af6960ace8831b1c947c954b1cd3aed4fa53bb
         print(f"Test losses: {list(np.around(np.array(test_losses), 4))}")
         print(f"Test accuracies: {test_accs}")
         print("Finished")
