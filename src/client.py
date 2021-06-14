@@ -31,7 +31,6 @@ class Client:
                  epsilon: float,
                  max_grad_norm: float,
                  noise_multiplier: float,
-                 client_id: int,
                  loss: nn.modules.loss,
                  verbose="all"):
         self.id = client_id

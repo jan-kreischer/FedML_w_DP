@@ -84,7 +84,6 @@ class Server:
                 epsilon=epsilon_round,
                 max_grad_norm=max_grad_norm,
                 noise_multiplier=noise_multiplier,
-                client_id=i,
                 loss=loss,
                 verbose=verbose,
             )
