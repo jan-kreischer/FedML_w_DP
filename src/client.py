@@ -32,9 +32,11 @@ class Client:
                  max_grad_norm: float,
                  noise_multiplier: float,
                  loss: nn.modules.loss,
+                 device: torch.device,
                  verbose="all"):
         self.id = client_id
         self.model = model
+        self.device = device
         self.train_loader = data
         self.len_data = len_data
 
@@ -88,6 +90,7 @@ class Client:
 
             for i, (images, labels) in enumerate(self.train_loader):
                 # Setting gradients to zero before starting backpropagation
+                images, labels = images.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
                 output = self.model(images)
                 loss = self.criterion(output, labels)

@@ -85,12 +85,13 @@ class Server:
                 max_grad_norm=max_grad_norm,
                 noise_multiplier=noise_multiplier,
                 loss=loss,
+                device=device,
                 verbose=verbose,
             )
 
         self.test_data, self.clients_len_data = data_obj.get_server_data()
         self.len_train_data = np.sum(list(self.clients_len_data.values()))
-        self.global_model = model
+        self.global_model = model.to(self.device)
         self.criterion = loss
         self.is_parallel = is_parallel
         self.verbose = (verbose == "server" or verbose == "all")
@@ -121,19 +122,20 @@ class Server:
         nr_correct = 0
         len_test_data = 0
         for attributes, labels in self.test_data:
-            features = attributes.float()
-            outputs = self.global_model(features)
+            labels.to(self.device)
+            features = attributes.float().to(self.device)
+            outputs = self.global_model(features).to(self.device)
             # accuracy
             if self.data == 'MNIST' or self.data == 'FEMNIST':
-                pred_labels = torch.argmax(outputs, dim=1)
+                pred_labels = torch.argmax(outputs, dim=1).to(self.device)
             elif self.data == 'MED':
-                pred_labels = torch.round(outputs)
+                pred_labels = torch.round(outputs).to(self.device)
             else:
                 raise NotImplementedError
-            nr_correct += torch.eq(pred_labels, labels).type(torch.uint8).sum().item()
+            nr_correct += torch.eq(pred_labels.to(self.device), labels.to(self.device)).type(torch.uint8).sum().item()
             len_test_data += len(attributes)
             # loss
-            test_loss += self.criterion(outputs, labels)
+            test_loss += self.criterion(outputs.to(self.device), labels.to(self.device))
 
         return nr_correct / len_test_data, test_loss.item()
 
