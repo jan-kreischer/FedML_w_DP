@@ -83,4 +83,4 @@ def plot_exp(experiment_losses,experiment_accs,names,title):
     ax1.legend(loc='upper right')
     ax2.legend(loc='lower right')
     ax1.set_title(title)
-    plt.show()
+    return fig
