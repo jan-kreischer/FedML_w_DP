@@ -3,3 +3,4 @@ torch~=1.8.1
 numpy~=1.20.2
 opacus~=0.13.0
 pandas==1.2.4
+matplotlib==3.4.1
