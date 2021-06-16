@@ -5,7 +5,7 @@ The server contains a list of client instances that perform the training on loca
 method is used to combine the updated client models in the global model.  
 Each client applies a DP mechanism locally using [Opacus](https://opacus.ai/) to perturb trained parameters before uploading to the parameter server.  
 
-## Files
+## Files (src)
 
 > client.py: definition of the FL client class
 
@@ -17,10 +17,18 @@ Each client applies a DP mechanism locally using [Opacus](https://opacus.ai/) to
 
 > utils.py: definition of auxiliary functions
 
+## Files (experiments)
+
+> exp_FedMNIST.ipynb: notebook, experiments for the MNIST database
+
+> exp_FEMNIST.ipynb: notebook, experiments for the FEMMNIST database
+
+> exp_FedMed.ipynb: notebook, experiments for the medical database
+
 ## Usage
 1. Install requirements with ```pip install -r requirements.txt```
 2. Ensure to put training data into the ```data``` directory.
-3. Run ```index.ipynb```
+3. Run any notebook in the experiments directory
 
 ### Federated Learning Parameters
 
