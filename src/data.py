@@ -66,7 +66,7 @@ class FedMNIST:
 
 class FEMNIST:
     """
-    MNIST dataset, with samples randomly equally distributed among clients
+    FEMMNIST dataset, with samples randomly equally distributed among clients
     10 different classes (10 digits), images are 28x28
     """
 
