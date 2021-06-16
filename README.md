@@ -5,7 +5,7 @@ The server contains a list of client instances that perform the training on loca
 method is used to combine the updated client models in the global model.  
 Each client applies a DP mechanism locally using [Opacus](https://opacus.ai/) to perturb trained parameters before uploading to the parameter server.  
 
-## Files
+## Files (src)
 
 > client.py: definition of the FL client class
 
@@ -17,32 +17,51 @@ Each client applies a DP mechanism locally using [Opacus](https://opacus.ai/) to
 
 > utils.py: definition of auxiliary functions
 
+## Files (experiments)
+
+> exp_FedMNIST.ipynb: notebook, experiments for the MNIST database
+
+> exp_FEMNIST.ipynb: notebook, experiments for the FEMMNIST database
+
+> exp_FedMed.ipynb: notebook, experiments for the medical database
+
 ## Usage
 1. Install requirements with ```pip install -r requirements.txt```
 2. Ensure to put training data into the ```data``` directory.
-3. Run ```index.ipynb```
+3. Run any notebook in the experiments directory
 
 ### Federated Learning Parameters
 
 > **NR_CLIENTS**:
 *Number of distributed clients participating in the training process.*<br/>
-> **LR**:
-*Learning rate used for sgd.*<br/>
 > **NR_TRAINING_ROUNDS**:
 *Number of times that the server performs the global model update<br/> 
 based on the weights collected from the local client models.*<br/>
-> **CLIENT_EPOCHS**:
+> **DATA**:
+*Chosen data (MNIST, FEMNIST or MED).*<br/>
+> **EPOCHS**:
 *Number of epochs that each client is trained during one global training round.*<br/>
+> **LR**:
+*Learning rate used for sgd.*<br/>
+> **BATCH_SIZE**:
+*Size of the training batch.*<br/>
 
 ### Differential Privacy Parameters
 
->**MAX_GRAD_NORM**:
-*The maximum L2 norm of per-sample gradients before they are aggregated by the averaging step.*<br/>
 >**EPSILON**:
 *Privacy loss parameter, determining how much noise is added to the computation.*<br/>
->**DELTA**:
-*The target δ of the (ϵ,δ)-differential privacy guarantee.*<br/>
->**VIRTUAL_BATCH_SIZE**:
-*The average of n mini batches is accumulated into one virtual step of this size in order to save memory.*<br/>
->**N_ACCUMULATION_STEPS**:
-*The number of times a normal sgd step has to be performed in order to be able to perform one virtual step.*<br/>
+>**MAX_GRAD_NORM**:
+*The maximum L2 norm of per-sample gradients before they are aggregated by the averaging step.*<br/>
+>**NOISE_MULTIPLIER**:
+*Noise multiplier (during the addition of noise).*<br/>
+
+### Other parameters
+
+>**IS_PRIVATE**:
+*Activate privacy.*<br/>
+>**IS_PARALLEL**:
+*Activate parallelization during clients training.*<br/>
+>**DEVICE**:
+*TORCH device.*<br/>
+>**VERBOSE**:
+*Verbose parameter (server, client, all or other).*<br/>
