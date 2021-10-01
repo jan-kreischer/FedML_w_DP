@@ -5,6 +5,11 @@ The server contains a list of client instances that perform the training on loca
 method is used to combine the updated client models in the global model.  
 Each client applies a DP mechanism locally using [Opacus](https://opacus.ai/) to perturb trained parameters before uploading to the parameter server.  
 
+Project Contributors
+- Adrien Banse
+- Xavi Oliva
+- Jan Bauer
+
 ## Files (src)
 
 > client.py: definition of the FL client class
